@@ -21,14 +21,35 @@
 # List application Arduino/chipKIT/Digispark/Energia/Maple/Microduino/Teensy/Wiring libraries here
 # default = 0 = none
 #
-APP_LIBS_LIST = 0
+# ARDUINO = EEPROM Esplora Ethernet Firmata GSM 
+#	LiquidCrystal LiquidCrystalFast Robot_Control Robot_Motor SD Servo 
+#	SoftwareSerial SPI Stepper TFT WiFi Wire 
+# TEENSY = AccelStepper Adafruit_GFX Adafruit_ILI9340 
+#	Adafruit_RA8875 Adafruit_SSD1306 Adafruit_ST7735 AltSoftSerial Bounce 
+#	CapacitiveSensor DmxSimple DogLcd DS1307RTC EEPROM Encoder Entropy 
+#	Esplora Ethernet FastLED Firmata FlexiTimer2 FreqCount
+#	FreqMeasure FrequencyTimer2 GSM IRremote Keypad ks0108 LedControl 
+#	LedDisplay LiquidCrystal LiquidCrystalFast LowPower Metro MIDI 
+#	MsTimer2 NeoPixel NewSoftSerial OctoWS2811 OneWire OSC Ping 
+#	PS2Keyboard PWMServo Robot_Control Robot_Motor SD Servo ShiftPWM 
+#	SoftPWM SoftwareSerial SPI ST7565 Stepper TFT Time TimeAlarms 
+#	TimerOne TimerThree TinyGPS Tlc5940 UTFT VirtualWire WiFi Wire 
+#	x10 XBee 
+#
+APP_LIBS_LIST = Metro FastLED
 
 # List user's libraries here 
 # default = 0 = none
 #
+# USER = Adafruit_NeoPixel adxl345driver AFmotor 
+#	ArduinoWebsocketClient BlinkyTape_Arduino bma180 bmp085driver color DebugUtils 
+#	FastLED FreeIMU HMC58X3 I2Cdev i2cdevlib itg3200filv05 LPD8806 
+#	MPU60X0 MS561101BA Spacebrew 
+#
 USER_LIBS_LIST = 0
 
-# List local libraries here# default = empty = all
+# List local libraries here
+# default = empty = all
 #
 LOCAL_LIBS_LIST =
 
@@ -49,7 +70,7 @@ LOCAL_LIBS_LIST =
 # WARNING_OPTIONS = all no-missing-braces no-conversion-null no-pointer-arith
 # WARNING_OPTIONS = unused-variable unused-function unused-label unused-value no-conversion-null no-pointer-arith
 #
-WARNING_OPTIONS = 0
+WARNING_OPTIONS = all
 
 
 # Parameters
@@ -94,4 +115,5 @@ MAKEFILE_PATH  = $(CURRENT_DIR)/Makefiles
 UTILITIES_PATH = $(CURRENT_DIR)/Utilities
 
 include $(MAKEFILE_PATH)/Step1.mk
+
 

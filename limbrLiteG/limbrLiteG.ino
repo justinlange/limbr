@@ -1,113 +1,168 @@
-/// 
-/// @mainpage	limbrLiteG 
-///
-/// @details	a new lighting instrument for dance performance
-/// @n 		
-/// @n 
-/// @n @a		Developed with [embedXcode+](http://embedXcode.weebly.com)
-/// 
-/// @author		Justin Lange
-/// @author		Justin Lange
-/// @date		3/19/14 5:07 PM
-/// @version	<#version#>
-/// 
-/// @copyright	(c) Justin Lange, 2014
-/// @copyright	License
-///
-/// @see		ReadMe.txt for references
-///
-
-
-///
-/// @file		limbrLiteG.ino
-/// @brief		Main sketch
-///
-/// @details	<#details#>
-/// @n @a		Developed with [embedXcode+](http://embedXcode.weebly.com)
-/// 
-/// @author		Justin Lange
-/// @author		Justin Lange
-/// @date		3/19/14 5:07 PM
-/// @version	<#version#>
-/// 
-/// @copyright	(c) Justin Lange, 2014
-/// @copyright	License
-///
-/// @see		ReadMe.txt for references
-/// @n
-///
-
 
 // Core library for code-sense
-#if defined(WIRING) // Wiring specific
 #include "Wiring.h"
-#elif defined(MAPLE_IDE) // Maple specific
-#include "WProgram.h"
-#elif defined(MPIDE) // chipKIT specific
-#include "WProgram.h"
-#elif defined(DIGISPARK) // Digispark specific
 #include "Arduino.h"
-#elif defined(ENERGIA) // LaunchPad MSP430 G2 and F5529, Stellaris and Tiva, Experimeter Board FR5739 specific
-#include "Energia.h"
-#elif defined(MICRODUINO) // Microduino specific
-#include "Arduino.h"
-#elif defined(TEENSYDUINO) // Teensy specific
-#include "Arduino.h"
-#elif defined(ARDUINO) // Arduino 1.0 and 1.5 specific
-#include "Arduino.h"
-#else // error
-#error Platform not defined
-#endif
 
 // Include application, user and local libraries
 #include "LocalLibrary.h"
+#include "FastLED.h"
+#include <Metro.h> //Include Metro library
 
 
-// Prototypes
+// Use if you want to force the software SPI subsystem to be used for some reason (generally, you don't)
+// #define FORCE_SOFTWARE_SPI
+// Use if you want to force non-accelerated pin access (hint: you really don't, it breaks lots of things)
+// #define FORCE_SOFTWARE_SPI
+// #define FORCE_SOFTWARE_PINS
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+// Move a white dot along the strip of leds.  This program simply shows how to configure the leds,
+// and then how to turn a single pixel white and then off, moving down the line of pixels.
+//
+
+// How many leds are in the strip?
+#define NUM_LEDS 8
+
+// Data pin that led data will be written out over
+#define DATA_PIN 5
+
+// Clock pin only needed for SPI based chipsets when not using hardware SPI
+//#define CLOCK_PIN 8
+
+// This is an array of leds.  One item for each led in your strip.
+CRGB ledsA[NUM_LEDS];
+CRGB ledsB[NUM_LEDS];
+CRGB ledsC[NUM_LEDS];
+
+CRGB leds[3][NUM_LEDS];
+
+Metro metro0 = Metro(500);
+Metro metro1 = Metro(10);
 
 
-// Define variables and constants
-///
-/// @brief	Name of the LED
-/// @details	Each board has a LED but connected to a different pin
-///
-uint8_t myLED;
+void timerCheck();
+void redBlue();
+bool flashState;
 
 
-///
-/// @brief	Setup
-/// @details	Define the pin the LED is connected to
-///
-// Add setup code 
+
+//CRGB[] leds;
+
+
+// This function sets up the ledsand tells the controller about them
 void setup() {
-  // myLED pin number
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) // Arduino specific 
-  myLED = 13; 
-#elif defined(__PIC32MX__) // chipKIT specific
-  myLED = 13;
-#elif defined(__AVR_ATtinyX5__) // Digispark specific
-    myLED = 1; // assuming model A
-#elif defined(__AVR_ATmega644P__) // Wiring specific
-  myLED = 15; 
-#elif defined(__MSP430G2452__) || defined(__MSP430G2553__) || defined(__MSP430G2231__) || defined(__MSP430F5529__)  || defined(__MSP430FR5739__) // LaunchPad MSP430 and Experimeter Board FR5739 specific
-    myLED = RED_LED;
-#elif defined(__LM4F120H5QR__) || defined(__TM4C1230C3PM__) // LaunchPad Stellaris and Tiva specific
-  myLED = RED_LED;
-#elif defined(MCU_STM32F103RB) || defined(MCU_STM32F103ZE) || defined(MCU_STM32F103CB) || defined(MCU_STM32F103RE) // Maple specific
-  myLED = BOARD_LED_PIN; 
-#elif defined(__MK20DX128__) || defined(__MK20DX256__) // Teensy 3.0 and 3.1 specific
-    myLED = 13;
-#endif
+	// sanity check delay - allows reprogramming if accidently blowing power w/leds
+   	delay(2000);
 
-  pinMode(myLED, OUTPUT);     
+    FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds[0], NUM_LEDS);
+    FastLED.addLeds<WS2812, DATA_PIN+1, GRB>(leds[1], NUM_LEDS);
+    FastLED.addLeds<WS2812, DATA_PIN+2, GRB>(leds[2], NUM_LEDS);
+    
+    LEDS.setBrightness(10);
+
+    
+  //  for (int i = 0; i<3; i++) {
+  //  }
+
+
+
+    
+    //  FastLED.addLeds<UCS1903B, DATA_PIN, RGB>(leds[i], NUM_LEDS);
+    
 }
 
-///
-/// @brief	Loop
-/// @details	Call blink
-///
-// Add loop code 
+
 void loop() {
-  blink(myLED, 3, 333);
-  delay(1000);    
+    
+   // timerCheck();
+    redBlue();
+
+    
+    
+    
+    /* each array addressed individually by name
+     // Move a single white led
+     for(int whiteLed = 0; whiteLed < stripNum; whiteLed = whiteLed + 1) {
+     // Turn our current led on to white, then show the leds
+     ledsA[whiteLed] = CRGB::White;
+     // Show the leds (only one of which is set to white, from above)
+     FastLED.show();
+     // Wait a little bit
+     delay(100);
+     
+     // Turn our current led back to black for the next loop around
+     ledsA[whiteLed] = CRGB::Black;
+     }
+     for(int whiteLed = 0; whiteLed < stripNum; whiteLed = whiteLed + 1) {
+     // Turn our current led on to white, then show the leds
+     ledsB[whiteLed] = CRGB::White;
+     // Show the leds (only one of which is set to white, from above)
+     FastLED.show();
+     // Wait a little bit
+     delay(100);
+     
+     // Turn our current led back to black for the next loop around
+     ledsB[whiteLed] = CRGB::Black;
+     }
+     for(int whiteLed = 0; whiteLed < stripNum; whiteLed = whiteLed + 1) {
+     // Turn our current led on to white, then show the leds
+     ledsC[whiteLed] = CRGB::White;
+     // Show the leds (only one of which is set to white, from above)
+     FastLED.show();
+     // Wait a little bit
+     delay(100);
+     
+     // Turn our current led back to black for the next loop around
+     ledsC[whiteLed] = CRGB::Black;
+     }
+     */
+    
+    // stripNum = (stripNum+NUM_LEDS)%NUM_LEDS;
+    
+}
+
+void redBlue(){
+    int stripNum = NUM_LEDS;
+    
+    if (metro1.check() == 1){
+        if(flashState){
+
+        for(int i=0; i<3; i++){
+            for(int whiteLed = 0; whiteLed < stripNum; whiteLed = whiteLed + 1) {
+                    leds[i][whiteLed] = CRGB::Blue;
+                }
+            }
+        }else if(!flashState){
+            for(int i=0; i<3; i++){
+                for(int whiteLed = 0; whiteLed < stripNum; whiteLed = whiteLed + 1) {
+                    leds[i][whiteLed] = CRGB::Red;
+                }
+            }
+        }
+        FastLED.show();
+        flashState = !flashState;
+    
+    }
+}
+
+
+void timerCheck(){
+    int stripNum = NUM_LEDS;
+    
+    if (metro0.check() == 1){
+        for(int i=0; i<3; i++){
+            for(int whiteLed = 0; whiteLed < stripNum; whiteLed = whiteLed + 1) {
+                // Turn our current led on to white, then show the leds
+                leds[i][whiteLed] = CRGB::Green;
+                // Show the leds (only one of which is set to white, from above)
+                FastLED.show();
+                // Wait a little bit
+                delay(5);
+                
+                // Turn our current led back to black for the next loop around
+                leds[i][whiteLed] = CRGB::Black;
+            }
+        }
+    }
 }
