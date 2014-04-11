@@ -36,7 +36,7 @@
 #	TimerOne TimerThree TinyGPS Tlc5940 UTFT VirtualWire WiFi Wire 
 #	x10 XBee 
 #
-APP_LIBS_LIST = Metro FastLED
+APP_LIBS_LIST = Metro FastLED Wire
 
 # List user's libraries here 
 # default = 0 = none
@@ -46,7 +46,7 @@ APP_LIBS_LIST = Metro FastLED
 #	FastLED FreeIMU HMC58X3 I2Cdev i2cdevlib itg3200filv05 LPD8806 
 #	MPU60X0 MS561101BA Spacebrew 
 #
-USER_LIBS_LIST = 0
+USER_LIBS_LIST = Adafruit_Sensor Adafruit_LSM303DLHC Adafruit_L3GD20_U Adafruit_9DOF T3Libs
 
 # List local libraries here
 # default = empty = all

@@ -1,20 +1,19 @@
 ///
-/// @file		LocalLibrary.h
-/// @brief		Library header
-///
+/// @file		Lighting_.h
+/// @brief		Class library header
 /// @details	<#details#>
-/// @n	
+/// @n
 /// @n @b		Project limbrLiteG
 /// @n @a		Developed with [embedXcode+](http://embedXcode.weebly.com)
-/// 
+///
 /// @author		Justin Lange
 /// @author		Justin Lange
 ///
-/// @date		3/19/14 5:07 PM
+/// @date		3/20/14 10:05 PM
 /// @version	<#version#>
-/// 
+///
 /// @copyright	(c) Justin Lange, 2014
-/// @copyright	License
+/// @copyright	<#license#>
 ///
 /// @see		ReadMe.txt for references
 ///
@@ -41,23 +40,56 @@
 #error Platform not defined
 #endif // end IDE
 
-#ifndef limbrLiteG_LocalLibrary_h
-#define limbrLiteG_LocalLibrary_h
+#ifndef Lighting__h
 
-
+#define Lighting__h
 
 
 ///
-/// @brief	Blink a LED
-/// @details	LED attached to pin is light on then light off
-/// @n		Total cycle duration = ms
-/// @param	pin pin to which the LED is attached
-/// @param	times number of times
-/// @param	ms cycle duration in ms
+/// @class	<#Description#>
 ///
-void blink(uint8_t pin, uint8_t times, uint16_t ms);
+class Lighting_ {
+  
+public:
+  ///
+  /// @brief	Cosntructor
+  ///
+  Lighting_();
+  
+  ///
+  /// @brief	Initialisation
+  ///
+  void begin();
+  
+  ///
+  ///	@brief Who am I?
+  ///	@return Who am I? string
+  ///
+  String WhoAmI();
+  
+  ///
+  ///	@brief	<#Description#>
+  ///	@param	data <#data description#>
+  ///
+  void set(uint8_t data);
+  
+  ///
+  ///	@brief	<#Description#>
+  ///	@return	<#return value description#>
+  ///
+  uint8_t get();
 
-void redBlue();
-void adjustHue();
+    ///
+    ///	@brief	<#Description#>
+    ///	@param	data <#data description#>
+    ///
+    void setColorScheme();
+    
+    
+    
+  
+private:
+  uint8_t _data;
+};
 
 #endif
