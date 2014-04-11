@@ -10,7 +10,7 @@
 #include "Controller.h"
 
 // How many leds are in the strip?
-#define NUM_LEDS 8
+#define NUM_LEDS 12
 
 // Data pin that led data will be written out over
 #define DATA_PIN 3
@@ -56,12 +56,12 @@ void adjustHue();
 
 const int lArray[5] = {3,4,5,6,7};
 
-String fingerNames[] = {"pinkiw", "index", "middle", "ring", "thumb"};
-const int analogInPins[] = {A6, A7, A8, A9, A3};
+String fingerNames[] = {"thumb", "index", "middle", "ring", "pinkie"};
+const int analogInPins[] = {A3, A7, A8, A9, A6};
 
 int fla = 700;
-const int flexLow[] = {fla,fla,fla,fla,740};
-const int flexHigh[] = {900,900,900,900,900};
+const int flexLow[] = {760,680,690,710,706};
+const int flexHigh[] = {856,834,987,880,870};
 const static int bendThresh = 50;
 
 
@@ -103,9 +103,23 @@ sensor touch[4];
 
 //CRGB[] leds;
 
+
+/*
+ 
+        /~ )  ./')
+      /' /.--''./'')
+:--''  ;    ''./'')
+:     '     ''./')
+:           ''./'
+:--''-..--''''
+ 
+*/
 void initGestures(){
-    mukula.isBent = B11111;
-    thrisula.isBent = B01110;
+    
+
+    
+    mukula.isBent = B111110;  //trailing 0 is ignored
+    thrisula.isBent = B011100;
     
     
 }
@@ -149,28 +163,59 @@ void readSensors(bool print){
         
         if(print){
             Serial.print(flex[i].name);
-           // Serial.print("  rawVal:  ");
-           // Serial.print(flex[i].rawVal);
+            Serial.print("  rawVal:  ");
+            Serial.print(flex[i].rawVal);
             Serial.print("  mapVal:  ");
             Serial.print(flex[i].mapVal);
             Serial.print("  isBent:  ");
             Serial.println(flex[i].isBent);
 
 
-
+            
         }
+        
+        
     }
     
 
+    
   
     if(print) {
         Serial.println();
+        
+        String t;
+      
+        /*
+        switch (refByte) {
+            case mukula.isBent:
+                t = "mukula!";
+                break;
+                
+            case thrisula.isBent:
+                t = "thrisula!";
+                break;
+            default:
+                break;
+        }
+         */
+        
+        if(refByte == mukula.isBent)
+        {
+            Serial.print("mukula!");
+        }
+        else if(refByte == thrisula.isBent)
+        {
+            Serial.print("thrisula!");
+        }
+    
         Serial.print("  byte:  ");
         Serial.print(refByte);
-    }Serial.println();
+    
+}
+    Serial.println();
     
     
-    delay(300);
+    //delay(300);
     
 }
 
@@ -210,8 +255,10 @@ void setup() {
   //  for (int i = 0; i<3; i++) {
   //  }
 
+    initLEDs();
 
     initSensors();
+    initGestures();
     
     //  FastLED.addLeds<UCS1903B, DATA_PIN, RGB>(leds[i], NUM_LEDS);
     Serial.begin(9600);
@@ -222,11 +269,14 @@ void setup() {
 void loop() {
     
    // timerCheck();
-     //redBlue();
+    
+    if(mukula.isBent){
+    redBlue();
+    }
     //readSensors();
     //adjustHue();
   //  mController.listen();
-    readSensors(true);
+    readSensors(false);
     
     
 }
