@@ -36,21 +36,15 @@ CRGB leds[5][NUM_LEDS];
 Metro metro0 = Metro(500);
 Metro metro1 = Metro(30);
 
-void readSensors();
-void timerCheck();
-void redBlue();
-void adjustHue();
-void initLEDs();
-void evalGesture();
-void cubulateSimple();
-void palmJewel();
-void runSpell(int spell);
+
+
+
+
 
 
 bool flashState;
 
 //void printDebug(String, int, float, float, bool);
-
 
 const int lArray[5] = {3,4,5,6,7};
 
@@ -61,8 +55,18 @@ int fla = 700;
 const int flexLow[] = {760,680,690,710,706};
 const int flexHigh[] = {856,834,987,880,870};
 const static int bendThresh = 50;
-
 const int digitalInPins[] = {8,9,15,16};
+
+void readSensors();
+void timerCheck();
+void redBlue();
+void adjustHue();
+void initLEDs();
+void evalGesture();
+void cubulateSimple();
+void palmJewel();
+void runSpell(int spell);
+void testGrid();
 
 
 typedef struct
@@ -296,6 +300,46 @@ void evalGesture(){
     
 }
 
+
+void setup() {
+	// sanity check delay - allows reprogramming if accidently blowing power w/leds
+   	delay(500);
+
+    initLEDs();
+    initSensors();
+    initGestures();
+    
+    Serial.begin(9600);
+    
+}
+void loop() {
+    
+    testGrid();
+    
+   // timerCheck();
+    
+    //xpalmJewel();
+    //cubulateSimple();
+    //readSensors();
+    //adjustHue();
+    //readSensors(true);
+    //redBlue();
+    //evalGesture();
+    
+}
+    
+
+void printDebug(String title, int num1, float num2, float num3, bool newLine){
+    String printString = title + ":  num1: " + num1 + "  num2: " + num2 + "  num3: " + num3 + "  ";
+    if(newLine)  Serial.println(printString);
+    if(!newLine) Serial.print(printString);
+}
+
+
+/* ---------------------------------------------- */
+/* ------------------- SPELLS ------------------- */
+/* ---------------------------------------------- */
+
 void runSpell(int spell) {
     switch (spell) {
         case 0:
@@ -316,44 +360,6 @@ void runSpell(int spell) {
     
     
 }
-void setup() {
-	// sanity check delay - allows reprogramming if accidently blowing power w/leds
-   	delay(1000);
-
-    initLEDs();
-    initSensors();
-    initGestures();
-    
-    Serial.begin(9600);
-    
-}
-void loop() {
-    
-   // timerCheck();
-    
-    //xpalmJewel();
-    //cubulateSimple();
-    //readSensors();
-    //adjustHue();
-    readSensors(true);
-    //redBlue();
-    evalGesture();
-    
-}
-    
-
-void printDebug(String title, int num1, float num2, float num3, bool newLine){
-    String printString = title + ":  num1: " + num1 + "  num2: " + num2 + "  num3: " + num3 + "  ";
-    if(newLine)  Serial.println(printString);
-    if(!newLine) Serial.print(printString);
-}
-
-
-/* ---------------------------------------------- */
-/* ------------------- SPELLS ------------------- */
-/* ---------------------------------------------- */
-
-
 void initLEDs() {
     
     /*
@@ -365,15 +371,147 @@ void initLEDs() {
     
      */
     FastLED.addLeds<WS2812, 6, GRB>(leds[0], THUMB_CT);
-    FastLED.addLeds<WS2812, 5, GRB>(leds[4], PINKIE_CT);
-    FastLED.addLeds<WS2812, 7, GRB>(leds[3], RING_CT);
-    FastLED.addLeds<WS2812, 4, GRB>(leds[2], MIDDLE_CT);
     FastLED.addLeds<WS2812, 3, GRB>(leds[1], INDEX_CT);
-    LEDS.setBrightness(20);
+    FastLED.addLeds<WS2812, 4, GRB>(leds[2], MIDDLE_CT);
+    FastLED.addLeds<WS2812, 7, GRB>(leds[3], RING_CT);
+    FastLED.addLeds<WS2812, 5, GRB>(leds[4], PINKIE_CT);
+    LEDS.setBrightness(100);
+    
     
     
     
 }
+
+//things to do:
+
+//create palm grid (x & y axis)
+
+//create tips-of-finger-grid (x axis)
+
+
+int palmGrid[5][14] = {
+    {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1 },   //sample values
+    {-1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,-1,-1,-1 },  // index finger
+    { 2, 3, 4, 5, 6, 7, 8, 9,10,-1,-1,-1,-1,-1 },  // middle
+    {-1, 2, 3, 4, 5, 6, 7, 8, 9,-1,-1,-1,-1,-1 },  // ring
+    {-1,-1,-1,-1,-1,-1, 1, 2, 3, 4, 5, 6, 7, 8 },  // pinkie
+};
+
+
+
+/*
+int palmGrid[5][14] = {
+    {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1 },   //sample values
+    {-1,-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11 },  // index finger
+    {-1,-1, 2, 3, 4, 5, 6, 7, 8, 9,10,-1,-1, -1 },  // middle
+    {-1,-1, 1, 2, 3, 4, 5, 6, 7, 8, 9,-1,-1, -1 },  // ring
+    {-1,-1,-1,-1,-1, 0, 1, 2, 3, 4, 5, 6, 7,  8 },  // pinkie
+};
+ */
+
+/* void testGrid(){
+    for (int i=1; i<5; i++) {
+        for (int j=0; j<14; j++) {
+            Serial.print("i: ");
+            Serial.print(i);
+            Serial.print("  j: ");
+            Serial.print(j);
+            Serial.print("  palmGridVal: ");
+            Serial.println(int(palmGrid[i][j]));
+            
+            
+            int delayVal = 30;
+            
+            if(palmGrid[i][j] > -1){
+                int ledToShow = palmGrid[i][j];
+                leds[i][ledToShow] = CRGB::Purple;
+                LEDS.show();
+                delay(delayVal);
+                leds[i][ledToShow] = CRGB::Black;
+                LEDS.show();
+            }else{
+                delay(delayVal);
+            }
+            
+        }
+    }
+    
+} */
+
+void testGrid(){
+
+    for (int j=0; j<14; j++) {
+    for (int i=1; i<5; i++) {
+            int delayVal = 30;
+            
+            if(palmGrid[i][j] > -1){
+                int ledToShow = palmGrid[i][j];
+                leds[i][ledToShow] = CRGB::Purple;
+                LEDS.show();
+                delay(delayVal);
+                leds[i][ledToShow] = CRGB::Black;
+                LEDS.show();
+            }else{
+                delay(delayVal);
+            }
+            
+        }
+    }
+    
+}
+
+
+
+
+/* void gridOutside(){
+    
+    bool dripping = true;
+    bool scanningR = false;
+    bool scanningL = false;
+    bool rising = false;
+    
+    int column = 1;
+    int row = 0;
+    
+    if(dripping) row++;
+    
+    
+    if(row == 13) {
+        dripping = false;
+        scanningR = true;
+    }
+    
+    if(scanningR){
+        column ++;
+    }
+    
+    if(column)
+    
+        
+    
+    for (int j=0; j<14; j++) {
+        for (int i=1; i<5; i++) {
+            int delayVal = 30;
+            
+            if(palmGrid[i][j] > -1){
+                int ledToShow = palmGrid[i][j];
+                leds[i][ledToShow] = CRGB::Purple;
+                LEDS.show();
+                delay(delayVal);
+                leds[i][ledToShow] = CRGB::Black;
+                LEDS.show();
+            }else{
+                delay(delayVal);
+            }
+            
+        }
+    }
+    
+} */
+
+
+
+
 void adjustHue(){
     
     for(int i=0; i<5; i++){

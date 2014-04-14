@@ -7,6 +7,10 @@
   Project limbrLiteG
   Created by Justin Lange on 3/19/14
   Copyright © 2014 Justin Lange
+  ITP 2014
+  
+ special thanks to Caitlin Kilroy
+
   License License
 
 
