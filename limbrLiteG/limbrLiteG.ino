@@ -9,29 +9,24 @@
 #include <Metro.h> //Include Metro library
 #include "Controller.h"
 
-// How many leds are in the strip?
-#define NUM_LEDS 12
+#define NUM_LEDS 12 //must address LEDS individually :-(
 
-// Data pin that led data will be written out over
+#define PINKIE_CT 9
+#define RING_CT 10
+#define MIDDLE_CT 11
+#define INDEX_CT 12
+#define THUMB_CT 11
+
 #define DATA_PIN 3
 #define STRIP_NUM 5
-
-// Clock pin only needed for SPI based chipsets when not using hardware SPI
-//#define CLOCK_PIN 8
-
-// This is an array of leds.  One item for each led in your strip.
+#define NUM_GESTURES 4
 
 
-CRGB leds1[NUM_LEDS];
-CRGB leds2[NUM_LEDS];
-CRGB leds3[NUM_LEDS];
-CRGB leds4[NUM_LEDS];
-CRGB leds5[NUM_LEDS];
-
-CRGB ledsA[NUM_LEDS];
-CRGB ledsB[NUM_LEDS];
-CRGB ledsC[NUM_LEDS];
-
+CRGB ledsThumb[THUMB_CT];
+CRGB ledsIndex[INDEX_CT];
+CRGB ledsMiddle[MIDDLE_CT];
+CRGB ledsRing[RING_CT];
+CRGB ledsPinkie[PINKIE_CT];
 
 
 CRGB leds[5][NUM_LEDS];
@@ -39,18 +34,21 @@ CRGB leds[5][NUM_LEDS];
 
 
 Metro metro0 = Metro(500);
-Metro metro1 = Metro(100);
+Metro metro1 = Metro(30);
 
 void readSensors();
-float fFsr;
-float pot;
-
 void timerCheck();
-
 void redBlue();
+void adjustHue();
+void initLEDs();
+void evalGesture();
+void cubulateSimple();
+void palmJewel();
+void runSpell(int spell);
+
+
 bool flashState;
 
-void adjustHue();
 //void printDebug(String, int, float, float, bool);
 
 
@@ -64,24 +62,57 @@ const int flexLow[] = {760,680,690,710,706};
 const int flexHigh[] = {856,834,987,880,870};
 const static int bendThresh = 50;
 
-
-
-
 const int digitalInPins[] = {8,9,15,16};
 
-//thumb is 0, pinkie is 4
 
 typedef struct
 {
-    String name;
-    byte isBent;
     bool isTouch[4]; //fingers that are touching
     int id;
     
-} gestures;
+    void setPos(byte _bendPos, byte _touchPos)
+    {
+        bendPos = _bendPos;
+        touchPos = _touchPos;
+    }
+    
+    byte getTouchPos() { return touchPos; }
+    byte getBendPos()  { return bendPos ; }
+    
+    byte spgetBendPos()  {
+        byte tPos = bendPos | 1;
+        return tPos ;
+    }
+
+    
+    
+    void setInfo(String _sanskrit, String _english, byte _bendPos, byte _touchPos, int _spell ){
+        
+        sanskrit = _sanskrit;
+        english = _english;
+        bendPos = _bendPos;
+        touchPos = _touchPos;
+        spell = _spell;
+    }
+
+    void getInfo(){
+        String printString = "name  " + sanskrit + "  benPos: " + bendPos + "  touchPos: " + touchPos;
+        Serial.println(printString);
+        delay(100);
+    }
+
+    int getSpell(){ return spell; }
+    
+private:
+    String sanskrit, english;
+    byte bendPos, touchPos;
+    int spell;
 
 
-gestures    mukula, thrisula;
+} gesture;
+
+gesture    cGesture, mukula, thrisula;
+gesture gestures[NUM_GESTURES];
 
 typedef struct
 {
@@ -91,39 +122,42 @@ typedef struct
     int highRead;
     int rawVal;
     int mapVal;
-    boolean isBent;
+    boolean isHigh;
     
 } sensor;
 
-
-
-
 sensor flex[5];
-sensor touch[4];
-
-//CRGB[] leds;
+sensor touch[8];
 
 
-/*
- 
-        /~ )  ./')
-      /' /.--''./'')
-:--''  ;    ''./'')
-:     '     ''./')
-:           ''./'
-:--''-..--''''
- 
-*/
+
 void initGestures(){
     
+    int touchByte = B00000;
+/*
+          / ' )   ./')
+         /' /.--''./'')
+     :--''  ;    ''./'')
+     :     '     ''./')
+     :           ''./'
+     :--''-..--''''
+*/
+    mukula.setPos(B11111, touchByte);  //trailing 0 is ignored
+    thrisula.setPos(B01110, touchByte);
+    
+    gestures[0].setInfo("pataka", "flag", B00000, B11110000, 0);
+    gestures[1].setInfo("thrisula", "trident", B01110, B01100000, 1);
+    //gestures[2].setInfo("makula", B111110, B00001);
+    gestures[2].setInfo("Kartarimukha", "Arrow shaft", B10011, B00010011, 2);
+    gestures[3].setInfo("Shikhara", "Heroism", B01111, B01110000, 3);
 
-    
-    mukula.isBent = B111110;  //trailing 0 is ignored
-    thrisula.isBent = B011100;
-    
-    
-}
 
+    //gestures[3].setInfo("Mudrakhya",)
+    //gestures[0].setPos(B111110, B001001);
+    gestures[0].getInfo();
+    
+    
+}//set gesture info for hand positions
 void initSensors() {
     
     for (int i=0; i<5; i++) {
@@ -132,7 +166,7 @@ void initSensors() {
         flex[i].name = fingerNames[i];
         flex[i].lowRead = flexLow[i];
         flex[i].highRead = flexHigh[i];
-        flex[i].isBent = false;
+        flex[i].isHigh = false;
         pinMode(flex[i].pin, INPUT);
     }
     
@@ -145,171 +179,302 @@ void initSensors() {
 
 void readSensors(bool print){
     
-    int refByte = 0;
+    int bendByte = 0;
+    int touchByte = 0;
     
     for (int i=0; i<5; i++) {
         flex[i].rawVal = analogRead(flex[i].pin);
         flex[i].mapVal = map(flex[i].rawVal, flex[i].lowRead, flex[i].highRead, 0, 100);
         if (flex[i].mapVal > bendThresh) {
-            flex[i].isBent = true;
-            refByte = refByte | 1;
-            refByte = refByte << 1;
+            flex[i].isHigh = true;
+            bendByte = bendByte | 1;
+        
         }else{
-            flex[i].isBent = false;
-
-            refByte = refByte << 1;
+            flex[i].isHigh = false;
+        }
+        if(i<4){
+            bendByte = bendByte << 1;
         }
         
+        bool readState;
         
-        if(print){
-            Serial.print(flex[i].name);
-            Serial.print("  rawVal:  ");
-            Serial.print(flex[i].rawVal);
-            Serial.print("  mapVal:  ");
-            Serial.print(flex[i].mapVal);
-            Serial.print("  isBent:  ");
-            Serial.println(flex[i].isBent);
-
-
+        
+        for (int i=0; i<8; i++){
+             readState = digitalRead(touch[i].pin);
+            
+            if(readState){
+                touch[i].isHigh = true;
+                touchByte = touchByte | 1;
+                
+            }else{
+                touch[i].isHigh = true;
+                
+            }
+            if (i<7) touchByte = touchByte << 1;
             
         }
         
-        
-    }
-    
+        cGesture.setPos(bendByte, touchByte);
+   
+        if(print){
+            Serial.print(flex[i].name);
+            Serial.print(" raw: ");
+            Serial.print(flex[i].rawVal);
+            Serial.print(", map: ");
+            Serial.print(flex[i].mapVal);
+            Serial.print(", isHigh: ");
+            Serial.print(flex[i].isHigh);
+            Serial.print("    ");
 
-    
-  
-    if(print) {
-        Serial.println();
+        }
         
-        String t;
+    } // create a byte representing bent fingers
+    
+    
+    //have 8 switches, four between spaces between fingers left to right, and four between thumb & each finger
+ 
+    
+    if(print) {
+       // Serial.println();
       
         /*
-        switch (refByte) {
-            case mukula.isBent:
-                t = "mukula!";
-                break;
-                
-            case thrisula.isBent:
-                t = "thrisula!";
-                break;
-            default:
-                break;
-        }
-         */
-        
-        if(refByte == mukula.isBent)
+        if(bendByte == mukula.getBendPos())
         {
             Serial.print("mukula!");
         }
-        else if(refByte == thrisula.isBent)
+        else if(bendByte == thrisula.getBendPos())
         {
             Serial.print("thrisula!");
         }
     
-        Serial.print("  byte:  ");
-        Serial.print(refByte);
+        //Serial.print("  byte:  ");
+        //Serial.println(bendByte);
+         */
     
-}
+    } //print values for testing (delete soon)
+    
     Serial.println();
+ 
+}
+
+bool sameGesture(gesture gesCur, gesture gesRef){
+    if(gesCur.getBendPos() == gesRef.getBendPos() && gesCur.getTouchPos() == gesRef.getTouchPos()){
+        return true;
+    }
+    return false;
+}
+bool sameBesidesPinkie(gesture gesCur, gesture gesRef){
+    if(gesCur.spgetBendPos() == gesRef.spgetBendPos() ){
+        return true;
+    }
+    return false;
+}
+bool sameBend(gesture gesCur, gesture gesRef) {
+    if(gesCur.getBendPos() == gesRef.getBendPos() ){
+        return true;
+    }
+    return false;
+}
+
+void evalGesture(){
     
+    for(int i = 0; i< NUM_GESTURES; i++ ){
     
-    //delay(300);
+        //gestures[i].getInfo();
+        
+        if(sameBesidesPinkie(cGesture, gestures[i])){
+            //String printString = "at position: " + i;
+            //Serial.print(printString);
+            gestures[i].getInfo();
+            runSpell( gestures[i].getSpell() );
+        }
+       
+    }
+        //if(touchByte == mukula.getTouchPos()){
+        //set current hand gesture to last hand gesture
+        //set current hand gesture to mukula
     
 }
 
-void returnState(){
-
+void runSpell(int spell) {
+    switch (spell) {
+        case 0:
+            palmJewel();
+            break;
+        case 1:
+            redBlue();
+            break;
+        case 2:
+            cubulateSimple();
+            break;
+        default:
+            adjustHue();
+            break;
+    }
     
     
     
     
 }
-
-void initLEDs() {
-    
-    
-    FastLED.addLeds<WS2812, 3, GRB>(leds[0], NUM_LEDS);
-    FastLED.addLeds<WS2812, 4, GRB>(leds[1], NUM_LEDS);
-    FastLED.addLeds<WS2812, 5, GRB>(leds[3], NUM_LEDS);
-    FastLED.addLeds<WS2812, 6, GRB>(leds[4], NUM_LEDS);
-    FastLED.addLeds<WS2812, 7, GRB>(leds[5], NUM_LEDS);
-    
-    LEDS.setBrightness(20);
-    
-    
-    
-}
-
-
-// This function sets up the ledsand tells the controller about them
 void setup() {
 	// sanity check delay - allows reprogramming if accidently blowing power w/leds
-   	delay(2000);
-    
-    
-   // mController.initSensors();
-
-    
-  //  for (int i = 0; i<3; i++) {
-  //  }
+   	delay(1000);
 
     initLEDs();
-
     initSensors();
     initGestures();
     
-    //  FastLED.addLeds<UCS1903B, DATA_PIN, RGB>(leds[i], NUM_LEDS);
     Serial.begin(9600);
     
 }
-
-
 void loop() {
     
    // timerCheck();
     
-    if(mukula.isBent){
-    redBlue();
-    }
+    //xpalmJewel();
+    //cubulateSimple();
     //readSensors();
     //adjustHue();
-  //  mController.listen();
-    readSensors(false);
-    
+    readSensors(true);
+    //redBlue();
+    evalGesture();
     
 }
-
-
-
-/*
     
-
 
 void printDebug(String title, int num1, float num2, float num3, bool newLine){
     String printString = title + ":  num1: " + num1 + "  num2: " + num2 + "  num3: " + num3 + "  ";
     if(newLine)  Serial.println(printString);
     if(!newLine) Serial.print(printString);
+}
+
+
+/* ---------------------------------------------- */
+/* ------------------- SPELLS ------------------- */
+/* ---------------------------------------------- */
+
+
+void initLEDs() {
+    
+    /*
+    FastLED.addLeds<WS2812, 5, GRB>(ledsPinkie, PINKIE_CT);
+    FastLED.addLeds<WS2812, 7, GRB>(ledsRing, RING_CT);
+    FastLED.addLeds<WS2812, 4, GRB>(ledsMiddle, MIDDLE_CT);
+    FastLED.addLeds<WS2812, 3, GRB>(ledsIndex, INDEX_CT);
+    FastLED.addLeds<WS2812, 6, GRB>(ledsThumb, THUMB_CT);
+    
+     */
+    FastLED.addLeds<WS2812, 6, GRB>(leds[0], THUMB_CT);
+    FastLED.addLeds<WS2812, 5, GRB>(leds[4], PINKIE_CT);
+    FastLED.addLeds<WS2812, 7, GRB>(leds[3], RING_CT);
+    FastLED.addLeds<WS2812, 4, GRB>(leds[2], MIDDLE_CT);
+    FastLED.addLeds<WS2812, 3, GRB>(leds[1], INDEX_CT);
+    LEDS.setBrightness(20);
+    
     
     
 }
- */
-
-
 void adjustHue(){
     
-    for(int i=0; i<3; i++){
+    for(int i=0; i<5; i++){
         for(int ledNum = 0; ledNum < NUM_LEDS; ledNum++) {
-            leds[i][ledNum].setHSV(fFsr,255,150);
-            //leds[i][ledNum].setHSV(255,255,255);
+            leds[i][ledNum].setHSV(flex[i].mapVal,255,150);
         }
     }
     FastLED.show();
 
 }
+void cubulateSimple(){
+    
+    int pause = 20;
+    int longPause = pause * 10;
+    
+    //turn all the LEDS
+    
+    for(int i=1; i<5; i++){
+        for(int j = 0; j < NUM_LEDS; j++) {
+            leds[i][j] = CRGB::Yellow;
+        }
+    }
+    FastLED.show();
+    delay(pause);
+    
+    for(int i=1; i<5; i++){
+        for(int j = 0; j < NUM_LEDS; j++) {
+            leds[i][j] = CRGB::Black;
+        }
+    }
+    
+    FastLED.show();
+    delay(pause);
+    
+    //turn on the outside leds at an interval, for 10 times
 
+for (int t=0; t<5; t++) {
+            for(int j = 0; j < NUM_LEDS; j++) {
+                leds[1][j] = CRGB::Yellow;
+                leds[4][j] = CRGB::Yellow;
+                if(j < 3 || j > 8){
+                    leds[2][j] = CRGB::Yellow;
+                    leds[3][j] = CRGB::Yellow;
 
+                }
+            }
+    
+    FastLED.show();
+    delay(pause);
+        
+        for(int i=1; i<5; i++){
+            for(int j = 0; j < NUM_LEDS; j++) {
+                leds[i][j] = CRGB::Black;
+            }
+        }
+        FastLED.show();
+        delay(pause);
+        
+    }
+    
+    for(int i=1; i<5; i++){
+        for(int j = 0; j < NUM_LEDS; j++) {
+            leds[i][j] = CRGB::Yellow;
+        }
+    }
+    FastLED.show();
+    delay(pause);
+    
+    for(int i=1; i<5; i++){
+        for(int j = 0; j < NUM_LEDS; j++) {
+            leds[i][j] = CRGB::Black;
+        }
+    }
+    FastLED.show();
+
+    delay(longPause);
+
+    
+    //turn back all the leds again
+    //wait
+    
+    
+}
+void palmJewel(){
+    
+    int increment = 1;
+    
+    for(int scale = 0; scale < 128; scale++) {
+        LEDS.showColor(CHSV(100, 200, 150), scale);
+        delay(random8(increment, increment+3));
+    }
+    
+    
+    
+    for(int scale = 128; scale > 0; scale--) {
+        LEDS.showColor(CHSV(100, 200, 150), scale);
+        delay(random8(increment, increment+3));
+    }
+    
+    
+}
 void redBlue(){
     int stripNum = STRIP_NUM;
     
@@ -318,13 +483,13 @@ void redBlue(){
         if(flashState){
 
         for(int i=0; i<5; i++){
-            for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed = whiteLed + 1) {
+            for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed++) {
                     leds[i][whiteLed] = CRGB::Blue;
                 }
             }
         }else if(!flashState){
             for(int i=0; i<5; i++){
-                for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed = whiteLed + 1) {
+                for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed++) {
                     leds[i][whiteLed] = CRGB::Red;
                 }
             }
@@ -333,7 +498,6 @@ void redBlue(){
     
     }
 }
-
 
 void timerCheck(){
     int stripNum = NUM_LEDS;
