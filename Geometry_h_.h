@@ -1,5 +1,5 @@
 ///
-/// @file		Controller.h
+/// @file		Geometry_h_.h
 /// @brief		Class library header
 /// @details	<#details#>
 /// @n
@@ -9,7 +9,7 @@
 /// @author		Justin Lange
 /// @author		Justin Lange
 ///
-/// @date		3/20/14 9:59 PM
+/// @date		4/15/14 11:49 PM
 /// @version	<#version#>
 ///
 /// @copyright	(c) Justin Lange, 2014
@@ -40,57 +40,26 @@
 #error Platform not defined
 #endif // end IDE
 
-#ifndef Controller_h
+#ifndef Geometry_h__h
 
-#define Controller_h
+#define Geometry_h__h
 
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_LSM303_U.h>
-#include <Adafruit_9DOF.h>
-#include <Adafruit_L3GD20_U.h>
-#include "LocalLibrary.h"
-
-
-/* Assign a unique ID to the sensors */
-
-
-
-#define NUM_SENS 5
-#define NUM_SWITCH 4
 
 ///
-/// @class	processes sensor readings
+/// @class	<#Description#>
 ///
-class Controller {
+class Geometry_h_ {
   
 public:
-    
-    int flexReadings [];
-    int touchReadings [];
-    int heading;
-    int totalAccel;
-    int pitch;
-    int yaw;
-    int roll;
-    int palmArray[4][14];
-
-    
-    
-    
   ///
   /// @brief	Cosntructor
   ///
-  Controller();
+  Geometry_h_();
   
   ///
   /// @brief	Initialisation
   ///
   void begin();
- 
-  void initSensors();
-  void listen();
-  
   
   ///
   ///	@brief Who am I?
@@ -99,26 +68,19 @@ public:
   String WhoAmI();
   
   ///
-  ///	@brief
-  ///	@param	data of some type
+  ///	@brief	<#Description#>
+  ///	@param	data <#data description#>
   ///
   void set(uint8_t data);
   
   ///
-  ///	@brief	fill in later
-  ///	@return	fill in return data later
+  ///	@brief	<#Description#>
+  ///	@return	<#return value description#>
   ///
   uint8_t get();
   
 private:
   uint8_t _data;
-    
-    
-    const int analogInPins[NUM_SENS] = {A6, A7, A8, A9, A3};
-    const int digitalInPins[NUM_SWITCH] = {8,9,15,16};
-    const int numDigitalPins = 4;
-    
-    
 };
 
 #endif

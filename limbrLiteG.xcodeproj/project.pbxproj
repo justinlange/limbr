@@ -2157,8 +2157,8 @@
 		D0C9766918DA3E8C00E8E596 /* limbrLiteG.ino */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; path = limbrLiteG.ino; sourceTree = "<group>"; };
 		D0E32FB218DBD49C006E145C /* Controller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Controller.cpp; sourceTree = "<group>"; };
 		D0E32FB318DBD49C006E145C /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
-		D0E32FB818DBD5F2006E145C /* Lighting_.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Lighting_.cpp; path = ../Lighting_.cpp; sourceTree = "<group>"; };
-		D0E32FB918DBD5F2006E145C /* Lighting_.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Lighting_.h; path = ../Lighting_.h; sourceTree = "<group>"; };
+		D0FA7DA418FF495100161376 /* Shape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape.cpp; sourceTree = "<group>"; };
+		D0FA7DA518FF495100161376 /* Shape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -5043,8 +5043,8 @@
 		D0C9761618DA3E8C00E8E596 /* limbrLiteG */ = {
 			isa = PBXGroup;
 			children = (
-				D0E32FB818DBD5F2006E145C /* Lighting_.cpp */,
-				D0E32FB918DBD5F2006E145C /* Lighting_.h */,
+				D0FA7DA418FF495100161376 /* Shape.cpp */,
+				D0FA7DA518FF495100161376 /* Shape.h */,
 				D0C9761718DA3E8C00E8E596 /* main.cpp */,
 				D0C9761918DA3E8C00E8E596 /* Makefile */,
 				D0C9761B18DA3E8C00E8E596 /* ReadMe.txt */,

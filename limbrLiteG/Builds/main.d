@@ -30,6 +30,13 @@ Builds/main.o: main.cpp limbrLiteG.ino \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/elapsedMillis.h \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/Arduino.h \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/IntervalTimer.h \
+ Controller.h \
+ /Applications/Arduino.app/Contents/Resources/Java/libraries/Wire/Wire.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_Sensor/Adafruit_Sensor.h \
+ /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/Print.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_LSM303DLHC/Adafruit_LSM303_U.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_9DOF/Adafruit_9DOF.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_L3GD20_U/Adafruit_L3GD20_U.h \
  LocalLibrary.h \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/FastLED/FastLED.h \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/FastLED/controller.h \
@@ -59,11 +66,5 @@ Builds/main.o: main.cpp limbrLiteG.ino \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/FastLED/chipsets.h \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/FastLED/dmx.h \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/Metro/Metro.h \
- Controller.h \
- /Applications/Arduino.app/Contents/Resources/Java/libraries/Wire/Wire.h \
- /Users/justin/Documents/Arduino/Libraries/Adafruit_Sensor/Adafruit_Sensor.h \
- /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/Print.h \
- /Users/justin/Documents/Arduino/Libraries/Adafruit_LSM303DLHC/Adafruit_LSM303_U.h \
- /Users/justin/Documents/Arduino/Libraries/Adafruit_9DOF/Adafruit_9DOF.h \
- /Users/justin/Documents/Arduino/Libraries/Adafruit_L3GD20_U/Adafruit_L3GD20_U.h \
+ Shape.h \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/WProgram.h

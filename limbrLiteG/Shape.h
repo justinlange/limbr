@@ -1,5 +1,5 @@
 ///
-/// @file		Lighting_.h
+/// @file		Shape.h
 /// @brief		Class library header
 /// @details	<#details#>
 /// @n
@@ -9,7 +9,7 @@
 /// @author		Justin Lange
 /// @author		Justin Lange
 ///
-/// @date		3/20/14 10:05 PM
+/// @date		4/16/14 7:27 PM
 /// @version	<#version#>
 ///
 /// @copyright	(c) Justin Lange, 2014
@@ -17,6 +17,9 @@
 ///
 /// @see		ReadMe.txt for references
 ///
+
+#define NUM_GESTURES 4
+
 
 
 // Core library - IDE-based
@@ -40,25 +43,32 @@
 #error Platform not defined
 #endif // end IDE
 
-#ifndef Lighting__h
+#ifndef Shape_h
 
-#define Lighting__h
+#define Shape_h
 
 
 ///
 /// @class	<#Description#>
 ///
-class Lighting_ {
+class Shape {
   
 public:
   ///
   /// @brief	Cosntructor
   ///
-  Lighting_();
+  Shape();
   
   ///
   /// @brief	Initialisation
   ///
+    
+    void init();
+    
+    void readSensors(bool print);
+
+    void evalGesture();
+    
   void begin();
   
   ///
@@ -78,17 +88,29 @@ public:
   ///	@return	<#return value description#>
   ///
   uint8_t get();
+    
+    void initSensors();
+    void initGestures();
+    
+    const int lArray[5] = {3,4,5,6,7};
+    
+    String fingerNames[5] = {"thumb", "index", "middle", "ring", "pinkie"};
+    const int analogInPins[5] = {A3, A7, A8, A9, A6};
+    const int flexLow[5] = {723,680,690,710,706};
+    const int flexHigh[5] = {840,834,987,880,870};
+    const static int bendThresh = 50;
+    const int digitalInPins[4] = {8,9,15,16};
 
-    ///
-    ///	@brief	<#Description#>
-    ///	@param	data <#data description#>
-    ///
-    void setColorScheme();
     
     
     
   
 private:
+    
+    
+    
+    
+    
   uint8_t _data;
 };
 

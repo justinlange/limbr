@@ -1,3 +1,7 @@
+//next: put spells in own class. then right function that has case statement that calls them. then have default spell that flashes white or something so we know nothing is there yet
+
+
+
 #define LED_PIN     3
 #define COLOR_ORDER GRB
 //#define CHIPSET     WS2811
@@ -11,12 +15,14 @@ int SPARKING = 100;
 // Core library for code-sense
 #include "Wiring.h"
 #include "Arduino.h"
+#include "Controller.h"
 
 // Include application, user and local libraries
 #include "LocalLibrary.h"
 #include "FastLED.h"
 #include <Metro.h> //Include Metro library
 #include "Controller.h"
+#include "Shape.h"
 
 #define NUM_LEDS 12 //must address LEDS individually :-(
 
@@ -28,7 +34,6 @@ int SPARKING = 100;
 
 #define DATA_PIN 3
 #define STRIP_NUM 5
-#define NUM_GESTURES 4
 
 
 CRGB ledsThumb[THUMB_CT];
@@ -48,283 +53,79 @@ bool flashState;
 
 //void printDebug(String, int, float, float, bool);
 
-const int lArray[5] = {3,4,5,6,7};
 
-String fingerNames[] = {"thumb", "index", "middle", "ring", "pinkie"};
-const int analogInPins[] = {A3, A7, A8, A9, A6};
+
+
 
 int fla = 700;
-const int flexLow[] = {723,680,690,710,706};
-const int flexHigh[] = {840,834,987,880,870};
-const static int bendThresh = 50;
-const int digitalInPins[] = {8,9,15,16};
 
-void readSensors();
+
 void timerCheck();
 void redBlue();
 void adjustHue();
 void initLEDs();
-void evalGesture();
 void cubulateSimple();
 void palmJewel();
 void runSpell(int spell);
 void testGrid();
+void runFire();
+void Fire2012(int cooling, int sparking);
 
-void Fire2012();
-
-
-typedef struct
-{
-    bool isTouch[4]; //fingers that are touching
-    int id;
-    
-    void setPos(byte _bendPos, byte _touchPos)
-    {
-        bendPos = _bendPos;
-        touchPos = _touchPos;
-    }
-    
-    byte getTouchPos() { return touchPos; }
-    byte getBendPos()  { return bendPos ; }
-    
-    byte spgetBendPos()  {
-        byte tPos = bendPos | 1;
-        return tPos ;
-    }
-
-    
-    
-    void setInfo(String _sanskrit, String _english, byte _bendPos, byte _touchPos, int _spell ){
-        
-        sanskrit = _sanskrit;
-        english = _english;
-        bendPos = _bendPos;
-        touchPos = _touchPos;
-        spell = _spell;
-    }
-
-    void getInfo(){
-        String printString = "name  " + sanskrit + "  benPos: " + bendPos + "  touchPos: " + touchPos;
-        Serial.println(printString);
-        delay(100);
-    }
-
-    int getSpell(){ return spell; }
-    
-private:
-    String sanskrit, english;
-    byte bendPos, touchPos;
-    int spell;
+Shape s;
 
 
-} gesture;
-gesture    cGesture, mukula, thrisula;
-gesture gestures[NUM_GESTURES];
-
-typedef struct
-{
-    String name;
-    int pin;
-    int lowRead;
-    int highRead;
-    int rawVal;
-    int mapVal;
-    boolean isHigh;
-    
-} sensor;
-sensor flex[5];
-sensor touch[8];
-
-void initGestures(){
-    
-    int touchByte = B00000;
-/*
-          / ' )   ./')
-         /' /.--''./'')
-     :--''  ;    ''./'')
-     :     '     ''./')
-     :           ''./'
-     :--''-..--''''
-*/
-    mukula.setPos(B11111, touchByte);  //trailing 0 is ignored
-    thrisula.setPos(B01110, touchByte);
-    
-    gestures[0].setInfo("pataka", "flag", B00000, B11110000, 0);
-    gestures[1].setInfo("thrisula", "trident", B01110, B01100000, 1);
-    //gestures[2].setInfo("makula", B111110, B00001);
-    gestures[2].setInfo("Kartarimukha", "Arrow shaft", B10011, B00010011, 2);
-    gestures[3].setInfo("Shikhara", "Heroism", B01111, B01110000, 3);
 
 
-    //gestures[3].setInfo("Mudrakhya",)
-    //gestures[0].setPos(B111110, B001001);
-    gestures[0].getInfo();
+
+
+
+
+void initLEDs() {
+    
+    /*
+     FastLED.addLeds<WS2812, 5, GRB>(ledsPinkie, PINKIE_CT);
+     FastLED.addLeds<WS2812, 7, GRB>(ledsRing, RING_CT);
+     FastLED.addLeds<WS2812, 4, GRB>(ledsMiddle, MIDDLE_CT);
+     FastLED.addLeds<WS2812, 3, GRB>(ledsIndex, INDEX_CT);
+     FastLED.addLeds<WS2812, 6, GRB>(ledsThumb, THUMB_CT);
+     
+     */
+    FastLED.addLeds<WS2812, 6, GRB>(leds[0], THUMB_CT);
+    FastLED.addLeds<WS2812, 3, GRB>(leds[1], INDEX_CT);
+    FastLED.addLeds<WS2812, 4, GRB>(leds[2], MIDDLE_CT);
+    FastLED.addLeds<WS2812, 7, GRB>(leds[3], RING_CT);
+    FastLED.addLeds<WS2812, 5, GRB>(leds[4], PINKIE_CT);
+    LEDS.setBrightness(100);
     
     
-}//set gesture info for hand positions
-void initSensors() {
     
-    for (int i=0; i<5; i++) {
-        //flex[i] = sensor();
-        flex[i].pin = analogInPins[i];
-        flex[i].name = fingerNames[i];
-        flex[i].lowRead = flexLow[i];
-        flex[i].highRead = flexHigh[i];
-        flex[i].isHigh = false;
-        pinMode(flex[i].pin, INPUT);
-    }
-    
-    for (int i=0; i<4; i++) {
-        pinMode(digitalInPins[i], INPUT_PULLUP);
-        touch[i].pin = digitalInPins[i];
-    }
     
 }
-void readSensors(bool print){
-    
-    int bendByte = 0;
-    int touchByte = 0;
-    
-    for (int i=0; i<5; i++) {
-        flex[i].rawVal = analogRead(flex[i].pin);
-        flex[i].mapVal = map(flex[i].rawVal, flex[i].lowRead, flex[i].highRead, 0, 100);
-        if (flex[i].mapVal > bendThresh) {
-            flex[i].isHigh = true;
-            bendByte = bendByte | 1;
-        
-        }else{
-            flex[i].isHigh = false;
-        }
-        if(i<4){
-            bendByte = bendByte << 1;
-        }
-        
-        bool readState;
-        
-        
-        for (int i=0; i<8; i++){
-             readState = digitalRead(touch[i].pin);
-            
-            if(readState){
-                touch[i].isHigh = true;
-                touchByte = touchByte | 1;
-                
-            }else{
-                touch[i].isHigh = true;
-                
-            }
-            if (i<7) touchByte = touchByte << 1;
-            
-        }
-        
-        cGesture.setPos(bendByte, touchByte);
-   
-        if(print){
-            Serial.print(flex[i].name);
-            Serial.print(" raw: ");
-            Serial.print(flex[i].rawVal);
-            Serial.print(", map: ");
-            Serial.print(flex[i].mapVal);
-            Serial.print(", isHigh: ");
-            Serial.print(flex[i].isHigh);
-            Serial.print("    ");
 
-        }
-        
-    } // create a byte representing bent fingers
-    
-    
-    //have 8 switches, four between spaces between fingers left to right, and four between thumb & each finger
- 
-    
-    if(print) {
-       // Serial.println();
-      
-        /*
-        if(bendByte == mukula.getBendPos())
-        {
-            Serial.print("mukula!");
-        }
-        else if(bendByte == thrisula.getBendPos())
-        {
-            Serial.print("thrisula!");
-        }
-    
-        //Serial.print("  byte:  ");
-        //Serial.println(bendByte);
-         */
-    
-    } //print values for testing (delete soon)
-    
-    Serial.println();
- 
-}
-bool sameGesture(gesture gesCur, gesture gesRef){
-    if(gesCur.getBendPos() == gesRef.getBendPos() && gesCur.getTouchPos() == gesRef.getTouchPos()){
-        return true;
-    }
-    return false;
-}
-bool sameBesidesPinkie(gesture gesCur, gesture gesRef){
-    if(gesCur.spgetBendPos() == gesRef.spgetBendPos() ){
-        return true;
-    }
-    return false;
-}
-bool sameBend(gesture gesCur, gesture gesRef) {
-    if(gesCur.getBendPos() == gesRef.getBendPos() ){
-        return true;
-    }
-    return false;
-}
-void evalGesture(){
-    
-    for(int i = 0; i< NUM_GESTURES; i++ ){
-    
-        //gestures[i].getInfo();
-        
-        if(sameBend(cGesture, gestures[i])){
-            //String printString = "at position: " + i;
-            //Serial.print(printString);
-            gestures[i].getInfo();
-            runSpell( gestures[i].getSpell() );
-        }
-       
-    }
-        //if(touchByte == mukula.getTouchPos()){
-        //set current hand gesture to last hand gesture
-        //set current hand gesture to mukula
-    
-}
+
+
 
 void setup() {
 	// sanity check delay - allows reprogramming if accidently blowing power w/leds
    	delay(500);
 
     initLEDs();
-    initSensors();
-    initGestures();
+    s.initSensors();
+    s.initGestures();
     
     Serial.begin(9600);
+    
+    Serial.print(s.WhoAmI());
+ 
     
 }
 void loop() {
     
-    readSensors(false);
 
-    /*
     
-    random16_add_entropy( random());
     
-    Fire2012(); // run simulation frame
-    FastLED.show(); // display this frame
-    
-#if defined(FASTLED_VERSION) && (FASTLED_VERSION >= 2001000)
-    FastLED.delay(1000 / FRAMES_PER_SECOND);
-#else
-    delay(1000 / FRAMES_PER_SECOND);
-#endif  ﻿
-     */
+    /*runFire(    COOLING = map(flex[0].rawVal, flex[0].lowRead, flex[0].highRead, 20, 100);
+    SPARKING = map(flex[1].rawVal, flex[0].lowRead, flex[0].highRead, 50, 200););*/
     
     //testGrid();
     
@@ -333,9 +134,10 @@ void loop() {
     //xpalmJewel();
     //cubulateSimple();
     //adjustHue();
-    readSensors(true);
+    s.readSensors(false);
+    
     //redBlue();
-    evalGesture();
+    //s.evalGesture();
     
 }
 
@@ -346,9 +148,9 @@ void printDebug(String title, int num1, float num2, float num3, bool newLine){
 }
 
 
-/* ---------------------------------------------- */
-/* ------------------- SPELLS ------------------- */
-/* ---------------------------------------------- */
+/* ----------------------------------------------
+   ------------------- SPELLS -------------------
+   ---------------------------------------------- */
 
 void runSpell(int spell) {
     switch (spell) {
@@ -370,27 +172,6 @@ void runSpell(int spell) {
     
     
 }
-void initLEDs() {
-    
-    /*
-    FastLED.addLeds<WS2812, 5, GRB>(ledsPinkie, PINKIE_CT);
-    FastLED.addLeds<WS2812, 7, GRB>(ledsRing, RING_CT);
-    FastLED.addLeds<WS2812, 4, GRB>(ledsMiddle, MIDDLE_CT);
-    FastLED.addLeds<WS2812, 3, GRB>(ledsIndex, INDEX_CT);
-    FastLED.addLeds<WS2812, 6, GRB>(ledsThumb, THUMB_CT);
-    
-     */
-    FastLED.addLeds<WS2812, 6, GRB>(leds[0], THUMB_CT);
-    FastLED.addLeds<WS2812, 3, GRB>(leds[1], INDEX_CT);
-    FastLED.addLeds<WS2812, 4, GRB>(leds[2], MIDDLE_CT);
-    FastLED.addLeds<WS2812, 7, GRB>(leds[3], RING_CT);
-    FastLED.addLeds<WS2812, 5, GRB>(leds[4], PINKIE_CT);
-    LEDS.setBrightness(100);
-    
-    
-    
-    
-}
 int palmGrid[5][14] = {
     
     //things to do:
@@ -404,8 +185,6 @@ int palmGrid[5][14] = {
     {-1, 2, 3, 4, 5, 6, 7, 8, 9,-1,-1,-1,-1,-1 },  // ring
     {-1,-1,-1,-1,-1,-1, 1, 2, 3, 4, 5, 6, 7, 8 },  // pinkie
 };
-
-
 void testGrid(){
 
     for (int j=0; j<14; j++) {
@@ -473,6 +252,7 @@ void testGrid(){
      } */
     
 }
+/*
 void adjustHue(){
     
     for(int i=0; i<5; i++){
@@ -483,6 +263,7 @@ void adjustHue(){
     FastLED.show();
 
 }
+ */
 void cubulateSimple(){
     
     int pause = 20;
@@ -618,8 +399,95 @@ void timerCheck(){
     }
 }
 
-CRGB HeatColor( uint8_t temperature)
+typedef struct RgbColor
 {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+} RgbColor;
+
+typedef struct HsvColor
+{
+    unsigned char h;
+    unsigned char s;
+    unsigned char v;
+} HsvColor;
+
+RgbColor HsvToRgb(HsvColor hsv){
+    RgbColor rgb;
+    unsigned char region, remainder, p, q, t;
+    
+    if (hsv.s == 0)
+    {
+        rgb.r = hsv.v;
+        rgb.g = hsv.v;
+        rgb.b = hsv.v;
+        return rgb;
+    }
+    
+    region = hsv.h / 43;
+    remainder = (hsv.h - (region * 43)) * 6;
+    
+    p = (hsv.v * (255 - hsv.s)) >> 8;
+    q = (hsv.v * (255 - ((hsv.s * remainder) >> 8))) >> 8;
+    t = (hsv.v * (255 - ((hsv.s * (255 - remainder)) >> 8))) >> 8;
+    
+    switch (region)
+    {
+        case 0:
+            rgb.r = hsv.v; rgb.g = t; rgb.b = p;
+            break;
+        case 1:
+            rgb.r = q; rgb.g = hsv.v; rgb.b = p;
+            break;
+        case 2:
+            rgb.r = p; rgb.g = hsv.v; rgb.b = t;
+            break;
+        case 3:
+            rgb.r = p; rgb.g = q; rgb.b = hsv.v;
+            break;
+        case 4:
+            rgb.r = t; rgb.g = p; rgb.b = hsv.v;
+            break;
+        default:
+            rgb.r = hsv.v; rgb.g = p; rgb.b = q;
+            break;
+    }
+    
+    return rgb;
+}
+HsvColor RgbToHsv(RgbColor rgb){
+    HsvColor hsv;
+    unsigned char rgbMin, rgbMax;
+    
+    rgbMin = rgb.r < rgb.g ? (rgb.r < rgb.b ? rgb.r : rgb.b) : (rgb.g < rgb.b ? rgb.g : rgb.b);
+    rgbMax = rgb.r > rgb.g ? (rgb.r > rgb.b ? rgb.r : rgb.b) : (rgb.g > rgb.b ? rgb.g : rgb.b);
+    
+    hsv.v = rgbMax;
+    if (hsv.v == 0)
+    {
+        hsv.h = 0;
+        hsv.s = 0;
+        return hsv;
+    }
+    
+    hsv.s = 255 * long(rgbMax - rgbMin) / hsv.v;
+    if (hsv.s == 0)
+    {
+        hsv.h = 0;
+        return hsv;
+    }
+    
+    if (rgbMax == rgb.r)
+        hsv.h = 0 + 43 * (rgb.g - rgb.b) / (rgbMax - rgbMin);
+    else if (rgbMax == rgb.g)
+        hsv.h = 85 + 43 * (rgb.b - rgb.r) / (rgbMax - rgbMin);
+    else
+        hsv.h = 171 + 43 * (rgb.r - rgb.g) / (rgbMax - rgbMin);
+    
+    return hsv;
+}
+CRGB HeatColor( uint8_t temperature){
     // CRGB HeatColor( uint8_t temperature)
     // [to be included in the forthcoming FastLED v2.1]
     //
@@ -671,14 +539,36 @@ CRGB HeatColor( uint8_t temperature)
 #define COOLING  100
 #define SPARKING 10
  */
+/*
+CHSV rotateHue(CRGB colorToChange, float changeFactor){
+//    CHSV colorToChange = colorToChange.
+  return
+ 
+} */
 
-void Fire2012()
-{
+//CHSV rgb2hsv(CRGB inColor);
+
+void runFire(){
+    
+    random16_add_entropy( random());
+    
+    Fire2012(50,100); // run simulation frame
+    FastLED.show(); // display this frame
+    
+#if defined(FASTLED_VERSION) && (FASTLED_VERSION >= 2001000)
+    FastLED.delay(1000 / FRAMES_PER_SECOND);
+#else
+    delay(1000 / FRAMES_PER_SECOND);
+#endif  ﻿
+    
+}
+void Fire2012(int cooling, int sparking){
+    
+    COOLING = cooling;
+    SPARKING = sparking;
+
     
 
-    
-    COOLING = map(flex[0].rawVal, flex[0].lowRead, flex[0].highRead, 20, 100);
-    SPARKING = map(flex[1].rawVal, flex[0].lowRead, flex[0].highRead, 50, 200);
 
     // Fire2012 by Mark Kriegsman, July 2012
     
@@ -739,13 +629,200 @@ void Fire2012()
     
     // Step 4.  Map from heat cells to LED colors
     for( int j = 0; j < NUM_LEDS; j++) {
-        leds[finger][j] = HeatColor( heat[j]);
-    }
+        //CRGB mColor;
+        //CHSV hColor = rgb2hsv(HeatColor( heat[j]));
+
+        //mColor.setHSV(hColor.h, hColor.s, hColor.v);
+        /*
+        CRGB heatColor = HeatColor( heat[j]);
+        RgbColor rColor;
+        rColor.r = heatColor.r;
+        rColor.g = heatColor.g;
+        rColor.b = heatColor.b;
+        
+        CRGB h;
+        h.r = rColor.r;
+        h.g = rColor.g;
+        h.b = rColor.b;
+         */
+        
+        leds[finger][j] = HeatColor( heat[j]); }
     }
     
-    LEDS.setBrightness(map(flex[2].rawVal, flex[0].lowRead, flex[0].highRead, 0, 255));
+    //LEDS.setBrightness(map(flex[2].rawVal, flex[0].lowRead, flex[0].highRead, 0, 255)); //doesn't work
 
+    //CRGB myColor = CHSV(100, 100, 150);
+    
+    //CHSV myColorH = CHSV(100,150,150);
+    
+    //myColorH.saturation = 100;
 }
+
+
+/*
+
+typedef struct {
+    double r;       // percent
+    double g;       // percent
+    double b;       // percent
+} rgb;
+
+typedef struct {
+    double h;       // angle in degrees
+    double s;       // percent
+    double v;       // percent
+} hsv;
+
+static hsv      rgb2hsv(rgb in);
+static rgb      hsv2rgb(hsv in);
+
+CHSV rgb2hsv(CRGB inColor)
+{
+    delay(10);
+    
+    Serial.print("CRGB r: ");
+    Serial.print(inColor.r);
+    Serial.print(",  g: ");
+    Serial.print(inColor.g);
+    Serial.print(",  b: ");
+    Serial.print(inColor.b);
+
+    
+    rgb in;
+    in.r = static_cast<double>(inColor.r);
+    in.g = static_cast<double>(inColor.g);
+    in.b = static_cast<double>(inColor.b);
+    
+    Serial.print("     in.r: ");
+    Serial.print(in.r);
+    Serial.print(",  in.g: ");
+    Serial.print(in.g);
+    Serial.print(",  in.b: ");
+    Serial.print(in.b);
+
+    
+    CHSV outColor;
+    
+    
+    hsv         out;
+    double      min, max, delta;
+    
+    min = in.r < in.g ? in.r : in.g;
+    min = min  < in.b ? min  : in.b;
+    
+    max = in.r > in.g ? in.r : in.g;
+    max = max  > in.b ? max  : in.b;
+    
+    out.v = max;                                // v
+    delta = max - min;
+    if( max > 0.0 ) {
+        out.s = (delta / max);                  // s
+    } else {
+        // r = g = b = 0                        // s = 0, v is undefined
+        out.s = 0.0;
+        out.h = NAN;                            // its now undefined
+        outColor.s = map(out.s,0.0,1.0,0.0,255.0);
+        outColor.h = map(out.h,0.0,360.0,0.0,255.0);
+        outColor.v = map(out.v,0.0,1.0,0.0,255.0);
+        Serial.print("  out.s: ");
+        Serial.print(out.s);
+        Serial.print(",  out.h: ");
+        Serial.print(out.h);
+        Serial.print(",  out.v: ");
+        Serial.println(out.v);
+
+        
+        return outColor;
+    }
+    if( in.r >= max )                           // > is bogus, just keeps compilor happy
+        out.h = ( in.g - in.b ) / delta;        // between yellow & magenta
+    else
+        if( in.g >= max )
+            out.h = 2.0 + ( in.b - in.r ) / delta;  // between cyan & yellow
+        else
+            out.h = 4.0 + ( in.r - in.g ) / delta;  // between magenta & cyan
+    
+    out.h *= 60.0;                              // degrees
+    
+    if( out.h < 0.0 )
+        out.h += 360.0;
+    outColor.s = map(out.s,0.0,1.0,0.0,255.0);
+    outColor.h = map(out.h,0.0,360.0,0.0,255.0);
+    outColor.v = map(out.v,0.0,1.0,0.0,255.0);
+    Serial.print("  2nd conditional out.s: ");
+    Serial.print(out.s);
+    Serial.print(",  out.h: ");
+    Serial.print(out.h);
+    Serial.print(",  out.v: ");
+    Serial.println(out.v);
+    
+    
+    //outColor.s = 255;
+    //outColor.h = 150;
+    //outColor.v = 50;
+    return outColor;
+}
+
+
+rgb hsv2rgb(hsv in)
+{
+    double      hh, p, q, t, ff;
+    long        i;
+    rgb         out;
+    
+    if(in.s <= 0.0) {       // < is bogus, just shuts up warnings
+        out.r = in.v;
+        out.g = in.v;
+        out.b = in.v;
+        return out;
+    }
+    hh = in.h;
+    if(hh >= 360.0) hh = 0.0;
+    hh /= 60.0;
+    i = (long)hh;
+    ff = hh - i;
+    p = in.v * (1.0 - in.s);
+    q = in.v * (1.0 - (in.s * ff));
+    t = in.v * (1.0 - (in.s * (1.0 - ff)));
+    
+    switch(i) {
+        case 0:
+            out.r = in.v;
+            out.g = t;
+            out.b = p;
+            break;
+        case 1:
+            out.r = q;
+            out.g = in.v;
+            out.b = p;
+            break;
+        case 2:
+            out.r = p;
+            out.g = in.v;
+            out.b = t;
+            break;
+            
+        case 3:
+            out.r = p;
+            out.g = q;
+            out.b = in.v;
+            break;
+        case 4:
+            out.r = t;
+            out.g = p;
+            out.b = in.v;
+            break;
+        case 5:
+        default:
+            out.r = in.v;
+            out.g = p;
+            out.b = q;
+            break;
+    }
+    return out;     
+}
+ 
+ */
 
 
 
