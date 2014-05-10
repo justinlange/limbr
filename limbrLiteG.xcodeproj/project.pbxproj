@@ -2030,6 +2030,8 @@
 		AAAA140319170742AA0004CB /* MS561101BA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MS561101BA.h; sourceTree = "<group>"; };
 		AAAA140319170742AA0004CD /* Spacebrew.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Spacebrew.cpp; sourceTree = "<group>"; };
 		AAAA140319170742AA0004CE /* Spacebrew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Spacebrew.h; sourceTree = "<group>"; };
+		D0149556191DD1B300A2DF54 /* Imu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Imu.h; sourceTree = "<group>"; };
+		D0149557191DD61300A2DF54 /* Spell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Spell.h; sourceTree = "<group>"; };
 		D04BF2C718DD41B5009D2031 /* block_clockless.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = block_clockless.h; sourceTree = "<group>"; };
 		D04BF2C818DD41B5009D2031 /* chipsets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chipsets.h; sourceTree = "<group>"; };
 		D04BF2C918DD41B5009D2031 /* clockless.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = clockless.h; sourceTree = "<group>"; };
@@ -5043,14 +5045,16 @@
 		D0C9761618DA3E8C00E8E596 /* limbrLiteG */ = {
 			isa = PBXGroup;
 			children = (
-				D0FA7DA418FF495100161376 /* Shape.cpp */,
 				D0FA7DA518FF495100161376 /* Shape.h */,
+				D0FA7DA418FF495100161376 /* Shape.cpp */,
+				D0149556191DD1B300A2DF54 /* Imu.h */,
 				D0C9761718DA3E8C00E8E596 /* main.cpp */,
 				D0C9761918DA3E8C00E8E596 /* Makefile */,
 				D0C9761B18DA3E8C00E8E596 /* ReadMe.txt */,
 				D0C9761C18DA3E8C00E8E596 /* LocalLibrary.cpp */,
 				D0C9761E18DA3E8C00E8E596 /* LocalLibrary.h */,
 				D0C9766918DA3E8C00E8E596 /* limbrLiteG.ino */,
+				D0149557191DD61300A2DF54 /* Spell.h */,
 				D0E32FB218DBD49C006E145C /* Controller.cpp */,
 				D0E32FB318DBD49C006E145C /* Controller.h */,
 				D0C9761F18DA3E8C00E8E596 /* Sketchbook */,

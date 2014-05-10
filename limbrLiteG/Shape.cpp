@@ -28,13 +28,27 @@ Shape::Shape() {
 }
 
 
+
+
+
 void Shape::init(){
     initSensors();
     initGestures();
+    rHand = Imu();
+    rHand.initIMU();
+
     
+}
+
+int Shape::spellID(){
+    int _spellID = 0;
+    
+    return _spellID;
+    
+}
+
     
 
-}
 
 typedef struct
 {
@@ -46,9 +60,13 @@ typedef struct
     int mapVal;
     boolean isHigh;
     
+    int pMap(int min, int max){
+        return map(rawVal, lowRead, highRead, min, max);        
+    }
+    
 } sensor;
 sensor flex[5];
-sensor touch[8];
+sensor touch[5];
 
 typedef struct
 {
@@ -98,26 +116,31 @@ private:
 gesture    cGesture, mukula, thrisula;
 gesture gestures[NUM_GESTURES];
 
-bool sameGesture(gesture gesCur, gesture gesRef){
+/*
+bool Shape::sameGesture(gesture gesCur, gesture gesRef){
     if(gesCur.getBendPos() == gesRef.getBendPos() && gesCur.getTouchPos() == gesRef.getTouchPos()){
         return true;
     }
     return false;
-}
-bool sameBesidesPinkie(gesture gesCur, gesture gesRef){
+
+bool Shape::sameBesidesPinkie(gesture gesCur, gesture gesRef){
     if(gesCur.spgetBendPos() == gesRef.spgetBendPos() ){
         return true;
     }
     return false;
 }
-bool sameBend(gesture gesCur, gesture gesRef) {
+ 
+ 
+bool Shape::sameBend(gesture gesCur, gesture gesRef) {
     if(gesCur.getBendPos() == gesRef.getBendPos() ){
         return true;
     }
     return false;
 }
+ 
+ */
 
-bool considerGesture() {
+bool Shape::considerGesture() {
     //if current gesture is changeGesture
         //load next gesture but don't activate it
     
@@ -125,8 +148,8 @@ bool considerGesture() {
     return true;
 }
 
-
-void evalGesture(){
+/*
+void Shape::evalGesture(){
     
     for(int i = 0; i< NUM_GESTURES; i++ ){
         
@@ -143,6 +166,15 @@ void evalGesture(){
     //if(touchByte == mukula.getTouchPos()){
     //set current hand gesture to last hand gesture
     //set current hand gesture to mukula
+    
+}
+ 
+ */
+
+int Shape::getFlex(int finger, int min, int max){
+    int val = flex[finger].pMap(min, max);
+    return val;
+    
     
 }
 
@@ -240,6 +272,7 @@ void Shape::initGestures(){
     mukula.setPos(B11111, touchByte);  //trailing 0 is ignored
     thrisula.setPos(B01110, touchByte);
     
+    //add accel state....
     
     gestures[0].setInfo("change", "change", B11111, B1111000, 0); //gesture primes receiving new gesture
     gestures[4].setInfo("pataka", "flag", B00000, B11110000, 4);

@@ -66,5 +66,5 @@ Builds/main.o: main.cpp limbrLiteG.ino \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/FastLED/chipsets.h \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/FastLED/dmx.h \
  /Applications/Arduino.app/Contents/Resources/Java/libraries/Metro/Metro.h \
- Shape.h \
+ Shape.h Imu.h \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/WProgram.h

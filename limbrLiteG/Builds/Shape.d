@@ -28,4 +28,11 @@ Builds/Shape.o: Shape.cpp Shape.h \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/usb_flightsim.h \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/elapsedMillis.h \
  /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/Arduino.h \
- /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/IntervalTimer.h
+ /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/IntervalTimer.h \
+ /Applications/Arduino.app/Contents/Resources/Java/libraries/Wire/Wire.h \
+ Imu.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_Sensor/Adafruit_Sensor.h \
+ /Applications/Arduino.app/Contents/Resources/Java/hardware/teensy/cores/teensy3/Print.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_LSM303DLHC/Adafruit_LSM303_U.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_9DOF/Adafruit_9DOF.h \
+ /Users/justin/Documents/Arduino/Libraries/Adafruit_L3GD20_U/Adafruit_L3GD20_U.h

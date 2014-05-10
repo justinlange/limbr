@@ -47,6 +47,11 @@
 
 #define Shape_h
 
+//DOF
+#include <Wire.h>
+#include "Imu.h"
+
+
 
 ///
 /// @class	<#Description#>
@@ -59,17 +64,32 @@ public:
   ///
   Shape();
   
-  ///
-  /// @brief	Initialisation
-  ///
     
+       
     void init();
+
+    void initIMU();
+    
+    void printDOFinfo();
     
     void readSensors(bool print);
+    int getFlex(int finger, int min, int max);
 
     void evalGesture();
     
-  void begin();
+    void begin();
+    
+    int spellID();
+    
+    Imu rHand;
+    
+    
+    
+
+    
+   // bool sameGesture(gesture gesCur, gesture gesRef);
+    //bool sameBend(gesture gesCur, gesture gesRef);
+    bool considerGesture();
   
   ///
   ///	@brief Who am I?
@@ -95,17 +115,19 @@ public:
     const int lArray[5] = {3,4,5,6,7};
     
     String fingerNames[5] = {"thumb", "index", "middle", "ring", "pinkie"};
-    const int analogInPins[5] = {A3, A7, A8, A9, A6};
+    const int analogInPins[5] = {23, 22, 21, 14, 17};
     const int flexLow[5] = {723,680,690,710,706};
     const int flexHigh[5] = {840,834,987,880,870};
     const static int bendThresh = 50;
-    const int digitalInPins[4] = {8,9,15,16};
+    const int digitalInPins[5] = {3,4,15,16,6};
 
     
     
-    
+    //int spellID;
+
   
 private:
+    
     
     
     

@@ -26,11 +26,13 @@ int SPARKING = 100;
 
 #define NUM_LEDS 12 //must address LEDS individually :-(
 
-#define PINKIE_CT 9
-#define RING_CT 10
-#define MIDDLE_CT 11
-#define INDEX_CT 12
-#define THUMB_CT 11
+//13,5,2,7,20
+
+#define PINKIE_CT 8
+#define RING_CT 8
+#define MIDDLE_CT 8
+#define INDEX_CT 8
+#define THUMB_CT 8
 
 #define DATA_PIN 3
 #define STRIP_NUM 5
@@ -53,12 +55,8 @@ bool flashState;
 
 //void printDebug(String, int, float, float, bool);
 
-
-
-
-
+int brightLevel;
 int fla = 700;
-
 
 void timerCheck();
 void redBlue();
@@ -68,17 +66,22 @@ void cubulateSimple();
 void palmJewel();
 void runSpell(int spell);
 void testGrid();
-void runFire();
+void runFire(int cooling, int sparking);
 void Fire2012(int cooling, int sparking);
 
 Shape s;
 
 
 
+const static int pixPins[] = {13,5,2,7,20};
 
 
 
 
+
+//spells[numOfSpells];
+
+//    13,5,2,7,20
 
 void initLEDs() {
     
@@ -90,11 +93,11 @@ void initLEDs() {
      FastLED.addLeds<WS2812, 6, GRB>(ledsThumb, THUMB_CT);
      
      */
-    FastLED.addLeds<WS2812, 6, GRB>(leds[0], THUMB_CT);
-    FastLED.addLeds<WS2812, 3, GRB>(leds[1], INDEX_CT);
-    FastLED.addLeds<WS2812, 4, GRB>(leds[2], MIDDLE_CT);
-    FastLED.addLeds<WS2812, 7, GRB>(leds[3], RING_CT);
-    FastLED.addLeds<WS2812, 5, GRB>(leds[4], PINKIE_CT);
+    FastLED.addLeds<WS2812, 7, GRB>(leds[0], THUMB_CT);
+    FastLED.addLeds<WS2812, 5, GRB>(leds[1], INDEX_CT);
+    FastLED.addLeds<WS2812, 2, GRB>(leds[2], MIDDLE_CT);
+    FastLED.addLeds<WS2812, 20, GRB>(leds[3], RING_CT);
+    FastLED.addLeds<WS2812, 13, GRB>(leds[4], PINKIE_CT);
     LEDS.setBrightness(100);
     
     
@@ -102,6 +105,12 @@ void initLEDs() {
     
 }
 
+void setBrightness(){
+    
+    LEDS.setBrightness(brightLevel);
+    
+
+}
 
 
 
@@ -110,34 +119,66 @@ void setup() {
    	delay(500);
 
     initLEDs();
-    s.initSensors();
-    s.initGestures();
+    s.init();
+
     
     Serial.begin(9600);
     
-    Serial.print(s.WhoAmI());
+    
+    
+   Serial.print(s.WhoAmI());
+    
+    
+    /*
+     
+     Spell::format fire;
+     
+     fire.blinkRate = 30;
+     fire.startR = 255;
+     
+     
+     Spell fireSpell = Spell(fire);
+     
+    spells[counter] = fireSpell;
+     */
  
     
 }
 void loop() {
     
-
     
     
-    /*runFire(    COOLING = map(flex[0].rawVal, flex[0].lowRead, flex[0].highRead, 20, 100);
-    SPARKING = map(flex[1].rawVal, flex[0].lowRead, flex[0].highRead, 50, 200););*/
+    //s.printDOFinfo();
     
-    //testGrid();
-    
-   // timerCheck();
+    //timerCheck(); //fades green
     
     //xpalmJewel();
     //cubulateSimple();
     //adjustHue();
-    s.readSensors(false);
+    s.readSensors(true);
+
+    
+    
+    
+    
+    //runSpell(s.spellID());
+    
+    
+    
     
     //redBlue();
     //s.evalGesture();
+    
+    int cooling = s.getFlex(0, 20, 100);
+    int sparking = s.getFlex(1, 50, 200);
+    
+    
+    runFire(cooling, sparking);
+
+    
+    //testGrid();
+
+    
     
 }
 
@@ -168,6 +209,12 @@ void runSpell(int spell) {
             break;
     }
     
+    
+    
+    
+}
+
+void adjustHue(){
     
     
     
@@ -390,7 +437,7 @@ void timerCheck(){
                 // Show the leds (only one of which is set to white, from above)
                 FastLED.show();
                 // Wait a little bit
-                delay(5);
+                //delay(5);
                 
                 // Turn our current led back to black for the next loop around
                 leds[i][whiteLed] = CRGB::Black;
@@ -535,10 +582,10 @@ CRGB HeatColor( uint8_t temperature){
     return heatcolor;
 }
 
-/*
-#define COOLING  100
-#define SPARKING 10
- */
+
+//#define COOLING  100
+//#define SPARKING 10
+
 /*
 CHSV rotateHue(CRGB colorToChange, float changeFactor){
 //    CHSV colorToChange = colorToChange.
@@ -548,11 +595,11 @@ CHSV rotateHue(CRGB colorToChange, float changeFactor){
 
 //CHSV rgb2hsv(CRGB inColor);
 
-void runFire(){
+void runFire(int cooling, int sparking){
     
     random16_add_entropy( random());
     
-    Fire2012(50,100); // run simulation frame
+    Fire2012(cooling,sparking); // run simulation frame
     FastLED.show(); // display this frame
     
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION >= 2001000)
@@ -564,8 +611,8 @@ void runFire(){
 }
 void Fire2012(int cooling, int sparking){
     
-    COOLING = cooling;
-    SPARKING = sparking;
+    //COOLING = cooling;
+    //SPARKING = sparking;
 
     
 
@@ -613,7 +660,7 @@ void Fire2012(int cooling, int sparking){
     
     // Step 1.  Cool down every cell a little
     for( int i = 0; i < NUM_LEDS; i++) {
-        heat[i] = qsub8( heat[i],  random8(0, ((COOLING * 10) / NUM_LEDS) + 2));
+        heat[i] = qsub8( heat[i],  random8(0, ((cooling * 10) / NUM_LEDS) + 2));
     }
     
     // Step 2.  Heat from each cell drifts 'up' and diffuses a little
@@ -622,7 +669,7 @@ void Fire2012(int cooling, int sparking){
     }
     
     // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
-    if( random8() < SPARKING ) {
+    if( random8() < sparking ) {
         int y = random8(7);
         heat[y] = qadd8( heat[y], random8(160,255) );
     }
