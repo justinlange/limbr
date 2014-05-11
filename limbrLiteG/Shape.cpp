@@ -23,11 +23,7 @@
 // Code
 Shape::Shape() {
     
-    
-    
 }
-
-
 
 
 
@@ -40,6 +36,7 @@ void Shape::init(){
     
 }
 
+
 int Shape::spellID(){
     int _spellID = 0;
     
@@ -48,6 +45,7 @@ int Shape::spellID(){
 }
 
     
+
 
 
 typedef struct
@@ -61,7 +59,9 @@ typedef struct
     boolean isHigh;
     
     int pMap(int min, int max){
-        return map(rawVal, lowRead, highRead, min, max);        
+        int mMap = map(rawVal, lowRead, highRead, min, max);
+        mMap = max(mMap, 0);
+        return mMap;
     }
     
 } sensor;
@@ -89,13 +89,14 @@ typedef struct
     
     
     
-    void setInfo(String _sanskrit, String _english, byte _bendPos, byte _touchPos, int _spell ){
+    void setInfo(String _sanskrit, String _english, byte _bendPos, byte _touchPos, byte _dirPos){
         
         sanskrit = _sanskrit;
         english = _english;
         bendPos = _bendPos;
         touchPos = _touchPos;
-        spell = _spell;
+        dirPos = _dirPos;
+        //spell = _spell; // deprecated -- spells will be assigned to gestures in case statement in main loop
     }
     
     void getInfo(){
@@ -104,81 +105,56 @@ typedef struct
         delay(100);
     }
     
+    
+    
     int getSpell(){ return spell; }
     
 private:
     String sanskrit, english;
-    byte bendPos, touchPos;
+    byte bendPos, touchPos, dirPos;
     int spell;
     
     
 } gesture;
-gesture    cGesture, mukula, thrisula;
+gesture cGesture;
 gesture gestures[NUM_GESTURES];
 
-/*
-bool Shape::sameGesture(gesture gesCur, gesture gesRef){
-    if(gesCur.getBendPos() == gesRef.getBendPos() && gesCur.getTouchPos() == gesRef.getTouchPos()){
-        return true;
-    }
-    return false;
-
-bool Shape::sameBesidesPinkie(gesture gesCur, gesture gesRef){
-    if(gesCur.spgetBendPos() == gesRef.spgetBendPos() ){
-        return true;
-    }
-    return false;
-}
- 
- 
-bool Shape::sameBend(gesture gesCur, gesture gesRef) {
-    if(gesCur.getBendPos() == gesRef.getBendPos() ){
-        return true;
-    }
-    return false;
-}
- 
- */
-
-bool Shape::considerGesture() {
-    //if current gesture is changeGesture
-        //load next gesture but don't activate it
-    
-        //if shake, activate next gesture
-    return true;
-}
-
-/*
-void Shape::evalGesture(){
-    
-    for(int i = 0; i< NUM_GESTURES; i++ ){
-        
-        //gestures[i].getInfo();
-        
-        if(sameBesidesPinkie(cGesture, gestures[i])){
-            //String printString = "at position: " + i;
-            //Serial.print(printString);
-            gestures[i].getInfo();
-            //runSpell( gestures[i].getSpell() );
+void Shape::calibrate(){
+    for(int i=0;i<5;i++){
+        if(analogRead(flex[i].pin) < flexLow[i]){
+            flexLow[i] = analogRead(flex[i].pin);
         }
-        
+        if(analogRead(flex[i].pin) > flexHigh[i]){
+            flexHigh[i] = analogRead(flex[i].pin);
+        }
     }
-    //if(touchByte == mukula.getTouchPos()){
-    //set current hand gesture to last hand gesture
-    //set current hand gesture to mukula
+    
+    
     
 }
- 
+
+/*
+
+int Shape::getRoll(int min, int max){
+    int val = map(rHand.getRoll(), -90,90, min, max);
+  
  */
+    
+
 
 int Shape::getFlex(int finger, int min, int max){
     int val = flex[finger].pMap(min, max);
+    if(val<min) return min;
+    if(val>max) return max;
     return val;
     
     
 }
 
+
 void Shape::readSensors(bool print){
+    
+    rHand.update();
     
     int bendByte = 0;
     int touchByte = 0;
@@ -269,10 +245,51 @@ void Shape::initGestures(){
      :           ''./'
      :--''-..--''''
      */
-    mukula.setPos(B11111, touchByte);  //trailing 0 is ignored
-    thrisula.setPos(B01110, touchByte);
+
     
     //add accel state....
+    
+
+    gestures[0].setInfo("none","none",B00000000,B00000000,B000000);
+    gestures[1].setInfo("PATAKA","Flag", B00000, B11110000,	B100000);
+    gestures[2].setInfo("TRIPATAKA", "Flag with three fingers", B00010, B11110000, B100000);
+    gestures[3].setInfo("KARTARIMUKHA",	"Scissors blades", B10010,B00000000,B100000);
+    gestures[4].setInfo("ARDHACHANDRA","Crescent Moon",	B00000,	B11110000,	B001000);
+    
+    /*
+    gestures[].setInfo("ARALA",	"Bent",	B11000,	B01110000,	B100000);
+    gestures[].setInfo("SHUKATUNDA","Parrots beak",	B11010,		B100000);
+    gestures[].setInfo(");
+    gestures[].setInfo(");
+    gestures[].setInfo(");
+    gestures[].setInfo(");
+    gestures[].setInfo(");
+    gestures[].setInfo(");
+    gestures[].setInfo(");
+    gestures[].setInfo(");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+    gestures[].setInfo("");
+
+    
+    */
+    /*
     
     gestures[0].setInfo("change", "change", B11111, B1111000, 0); //gesture primes receiving new gesture
     gestures[4].setInfo("pataka", "flag", B00000, B11110000, 4);
@@ -280,6 +297,7 @@ void Shape::initGestures(){
     //gestures[2].setInfo("makula", B111110, B00001);
     gestures[2].setInfo("Kartarimukha", "Arrow shaft", B10011, B00010011, 2);
     gestures[3].setInfo("Shikhara", "Heroism", B01111, B01110000, 3);
+     */
     
     
     /*  neutral gesuture turns off lights? or have this controlled by spell formulas while you are in it?
@@ -319,6 +337,76 @@ void Shape::initSensors() {
     }
     
 }
+
+void Shape::storeCalibration(){
+    
+        for (int i=0; i<5; i++) {
+            int difference = flexHigh[i] - flexLow[i];
+            int buffer = difference/10;
+            
+            flex[i].lowRead = flexLow[i] + buffer;
+            flex[i].highRead = flexHigh[i] - buffer;
+        }  
+}
+
+/*
+ bool Shape::sameGesture(gesture gesCur, gesture gesRef){
+ if(gesCur.getBendPos() == gesRef.getBendPos() && gesCur.getTouchPos() == gesRef.getTouchPos()){
+ return true;
+ }
+ return false;
+ 
+ bool Shape::sameBesidesPinkie(gesture gesCur, gesture gesRef){
+ if(gesCur.spgetBendPos() == gesRef.spgetBendPos() ){
+ return true;
+ }
+ return false;
+ }
+ 
+ 
+ bool Shape::sameBend(gesture gesCur, gesture gesRef) {
+ if(gesCur.getBendPos() == gesRef.getBendPos() ){
+ return true;
+ }
+ return false;
+ }
+ 
+ */
+
+bool Shape::considerGesture() {
+    //if current gesture is changeGesture
+    //load next gesture but don't activate it
+    
+    //if shake, activate next gesture
+    return true;
+}
+
+//for evaluating gestures, look at flex positions and only loosly consider (or not at all) touch positions
+//between fingers that are bent
+
+/*
+ void Shape::evalGesture(){
+ 
+ for(int i = 0; i< NUM_GESTURES; i++ ){
+ 
+ //gestures[i].getInfo();
+ 
+ if(sameBesidesPinkie(cGesture, gestures[i])){
+ //String printString = "at position: " + i;
+ //Serial.print(printString);
+ gestures[i].getInfo();
+ //runSpell( gestures[i].getSpell() );
+ }
+ 
+ }
+ //if(touchByte == mukula.getTouchPos()){
+ //set current hand gesture to last hand gesture
+ //set current hand gesture to mukula
+ 
+ }
+ 
+ */
+
 
 
 void Shape::begin() {

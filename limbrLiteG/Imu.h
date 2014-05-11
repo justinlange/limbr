@@ -18,6 +18,9 @@
 /// @see		ReadMe.txt for references
 ///
 
+#define HAND -1  //1 means right hand, -1 for left hand
+
+
 #include <Adafruit_Sensor.h>
 #include <Adafruit_LSM303_U.h>
 #include <Adafruit_9DOF.h>
@@ -53,7 +56,11 @@
 //accelerometer data
 class Imu
 {
+    
+    int right = HAND;
     public:
+    
+    
 
     /* Assign a unique ID to the sensors */
     Adafruit_9DOF                 dof   = Adafruit_9DOF();
@@ -69,16 +76,29 @@ class Imu
         headingOffset = 0;
     }
     
+    float getRoll() { return roll; }
+    float getPitch() { return pitch; }
+    float getheading() { return heading; }
     
+    
+    int getRoll(int min, int max){
+        int val = map(roll, -90, 90, min, max);
+        if(val<min) return min;
+        if(val>max) return max;
+        return val;
+    }
+
+    
+
     
     float roll = 0;
     float pitch = 0;
     float heading = 0;
     
-    float up = 90;
-    float down = -90;
+    float up = 90 * HAND;
+    float down = -90 * HAND;
     float flat = 0;
-    float side = 90;
+    float side = 90 * HAND;
     float flip = 180;
     
     float rollThresh = 22;
@@ -87,17 +107,33 @@ class Imu
     float rollOffset = 0;
     float pitchOffset = 0;
     float headingOffset = 0;
-
+    
     
     float initialHeading = 0;
     
     struct shake {
-        float x;
-        float y;
-        float z;
-        float comp;
-        float thresh
+        float x = 0;
+        float y = 0;
+        float z = 0;
+        float comp = 0;
+        bool shaking;
+        
+        void update(){
+            comp = sqrt(x*x + y*y + z*z);
+            if(comp > thresh){
+                shaking = true;
+            }else{
+                shaking = false;
+            }
+        }
+        
+        
+    private:
+        float thresh = 12;
+
     };
+    
+    shake mShake;
     
     //hand orientation states. Seperate bools for opposing positions allows
     //confirmation that hand is actually in known position as opposed to
@@ -154,6 +190,12 @@ class Imu
         if(abs(roll - side) < pitchThresh) return true;
         return false;
     }
+    bool thumbDown()      {  //guess. Could also be up
+        if(abs(roll - side) < pitchThresh) return true;
+        return false;
+    }
+
+    
     bool palmDown()     {
         if(abs(roll - flat) < pitchThresh && abs(pitch - flat)) return true;
         return false;
@@ -162,9 +204,13 @@ class Imu
         if(abs(roll - flip) < pitchThresh && abs(pitch - flip)) return true;
         return false;
     }
+    
+    bool isShaking() {
+        if(mShake.shaking) return true; return false;
+    }
 
 
-    void setOrientation(){
+    void update(){
         
         sensors_event_t accel_event;
         sensors_event_t mag_event;
@@ -183,8 +229,12 @@ class Imu
             heading = orientation.heading + headingOffset;
             
             
-            accel_event.acceleration.x;
+            mShake.x = accel_event.acceleration.x;
+            mShake.y = accel_event.acceleration.y;
+            mShake.z = accel_event.acceleration.z;
             
+            mShake.update();
+
 
             }
         }
@@ -201,6 +251,7 @@ class Imu
         Serial.print("Y: "); Serial.print(event.acceleration.y); Serial.print("  ");
         Serial.print("Z: "); Serial.print(event.acceleration.z); Serial.print("  ");Serial.println("m/s^2 ");
         
+        
         /* Display the results (magnetic vector values are in micro-Tesla (uT)) */
         mag.getEvent(&event);
         Serial.print(F("MAG   "));
@@ -209,14 +260,14 @@ class Imu
         Serial.print("Z: "); Serial.print(event.magnetic.z); Serial.print("  ");Serial.println("uT");
         
         /* Display the results (gyrocope values in rad/s) */
-        gyro.getEvent(&event);
-        Serial.print(F("GYRO  "));
-        Serial.print("X: "); Serial.print(event.gyro.x); Serial.print("  ");
-        Serial.print("Y: "); Serial.print(event.gyro.y); Serial.print("  ");
-        Serial.print("Z: "); Serial.print(event.gyro.z); Serial.print("  ");Serial.println("rad/s ");
+//        gyro.getEvent(&event);
+//        Serial.print(F("GYRO  "));
+//        Serial.print("X: "); Serial.print(event.gyro.x); Serial.print("  ");
+//        Serial.print("Y: "); Serial.print(event.gyro.y); Serial.print("  ");
+//        Serial.print("Z: "); Serial.print(event.gyro.z); Serial.print("  ");Serial.println("rad/s ");
         
-        Serial.println(F(""));
-        delay(1000);
+//        Serial.println(F(""));
+//        delay(1000);
         
         
         

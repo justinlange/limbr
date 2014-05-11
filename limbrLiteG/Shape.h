@@ -84,7 +84,6 @@ public:
     Imu rHand;
     
     
-    
 
     
    // bool sameGesture(gesture gesCur, gesture gesRef);
@@ -116,12 +115,16 @@ public:
     
     String fingerNames[5] = {"thumb", "index", "middle", "ring", "pinkie"};
     const int analogInPins[5] = {23, 22, 21, 14, 17};
-    const int flexLow[5] = {723,680,690,710,706};
-    const int flexHigh[5] = {840,834,987,880,870};
+//    const int flexLow[5] = {770,900,730,750,710};
+//    const int flexHigh[5] = {805,860,900,900,750};
+    
+    int flexLow[5] = {10000,10000,10000,10000,10000};
+    int flexHigh[5] = {0,0,0,0,0};
     const static int bendThresh = 50;
     const int digitalInPins[5] = {3,4,15,16,6};
 
-    
+    void calibrate();
+        void storeCalibration();
     
     //int spellID;
 

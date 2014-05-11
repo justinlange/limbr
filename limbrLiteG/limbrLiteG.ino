@@ -1,6 +1,8 @@
 //next: put spells in own class. then right function that has case statement that calls them. then have default spell that flashes white or something so we know nothing is there yet
 
 
+//TO DO: reverse index flex se3nsor left hand
+
 
 #define LED_PIN     3
 #define COLOR_ORDER GRB
@@ -68,6 +70,7 @@ void runSpell(int spell);
 void testGrid();
 void runFire(int cooling, int sparking);
 void Fire2012(int cooling, int sparking);
+void followFingers();
 
 Shape s;
 
@@ -141,11 +144,21 @@ void setup() {
      
     spells[counter] = fireSpell;
      */
+    
+    
+    while(millis() < 3000){
+        s.calibrate();
+    }
+    
+    s.storeCalibration();
+    
+    Serial.println("done calibrating!");
  
     
 }
 void loop() {
     
+    followFingers();
     
     
     //s.printDOFinfo();
@@ -169,11 +182,11 @@ void loop() {
     //redBlue();
     //s.evalGesture();
     
-    int cooling = s.getFlex(0, 20, 100);
-    int sparking = s.getFlex(1, 50, 200);
+    //int cooling = s.getFlex(0, 20, 100);
+    //int sparking = s.getFlex(1, 50, 200);
     
     
-    runFire(cooling, sparking);
+    //runFire(cooling, sparking);
 
     
     //testGrid();
@@ -311,6 +324,76 @@ void adjustHue(){
 
 }
  */
+
+
+    
+    /*
+        for(int i=0; i<5; i++){
+                for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed++) {
+                    leds[i][whiteLed] = CRGB::Blue;
+                }
+            }
+        }else if(!flashState){
+            for(int i=0; i<5; i++){
+                for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed++) {
+                    leds[i][whiteLed] = CRGB::Red;
+                }
+            }
+        }
+        FastLED.show();
+        
+    }
+     */
+
+
+
+void followFingers(){
+    
+    int colNum = int(s.rHand.getRoll(0,255));
+    
+    for(int i=0; i<5; i++){
+        int controlNumber = s.getFlex(i, 0, 255);
+        Serial.print(controlNumber);
+        for(int j = 0; j < NUM_LEDS; j++) {
+            leds[i][j].setHSV(colNum, 255, controlNumber);
+        }
+    }
+    FastLED.show();
+    
+}
+
+
+void followFingersMono(){
+    
+    for(int i=0; i<5; i++){
+        int controlNumber = s.getFlex(i, 0, 255);
+        Serial.print(controlNumber);
+        for(int j = 0; j < NUM_LEDS; j++) {
+            leds[i][j].setRGB(0,0,controlNumber);
+        }
+    }
+    FastLED.show();
+
+}
+
+
+
+void followHand(){
+    
+    int controlNumber = s.getFlex(2, 0, 100);
+    
+        for(int i=0; i<5; i++){
+                for(int j = 0; j < NUM_LEDS; j++) {
+                    leds[i][j] = CRGB::Blue;
+                }
+            }
+        FastLED.setBrightness(controlNumber);
+        FastLED.show();
+    
+}
+
+
+
 void cubulateSimple(){
     
     int pause = 20;

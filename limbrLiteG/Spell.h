@@ -62,7 +62,9 @@ public:
     
     struct Format {
         
+       
         
+        //handPosition changeTrigger  -- i.e. for SHUKATUNDA, when the finger return to pataka with thumb still bent, the arrow is released
     };
     
     Format mFormat;
