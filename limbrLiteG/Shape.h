@@ -18,7 +18,7 @@
 /// @see		ReadMe.txt for references
 ///
 
-#define NUM_GESTURES 4
+#define NUM_GESTURES 25
 
 
 
@@ -83,6 +83,10 @@ public:
     
     Imu rHand;
     
+    void setTouchRead();
+    
+    void whichPin(int writePin, int readPin);
+    
     
 
     
@@ -111,7 +115,7 @@ public:
     void initSensors();
     void initGestures();
     
-    const int lArray[5] = {3,4,5,6,7};
+    //const int lArray[5] = {3,4,5,6,7};
     
     String fingerNames[5] = {"thumb", "index", "middle", "ring", "pinkie"};
     const int analogInPins[5] = {23, 22, 21, 14, 17};
@@ -121,8 +125,8 @@ public:
     int flexLow[5] = {10000,10000,10000,10000,10000};
     int flexHigh[5] = {0,0,0,0,0};
     const static int bendThresh = 50;
-    const int digitalInPins[5] = {3,4,15,16,6};
-
+    //const int digitalInPins[5] = {3,4,15,16,6};
+    const int touchPins[5] = {6,4,3,15,16};
     void calibrate();
         void storeCalibration();
     
@@ -130,7 +134,6 @@ public:
 
   
 private:
-    
     
     
     

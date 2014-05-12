@@ -18,7 +18,7 @@
 /// @see		ReadMe.txt for references
 ///
 
-#define HAND -1  //1 means right hand, -1 for left hand
+#define HAND    1  //1 means right hand, -1 for left hand
 
 
 #include <Adafruit_Sensor.h>
@@ -82,35 +82,86 @@ class Imu
     
     
     int getRoll(int min, int max){
-        int val = map(roll, -90, 90, min, max);
+        int val = map(roll, -180, 180, min, max);
         if(val<min) return min;
         if(val>max) return max;
         return val;
     }
 
     
-//test
     
+    
+    
+
+//test
+
     float roll = 0;
     float pitch = 0;
     float heading = 0;
     
-    float up = 90 * HAND;
-    float down = -90 * HAND;
-    float flat = 0;
-    float side = 90 * HAND;
-    float flip = 180;
+    float pitchUp = 90;
+    float pitchDown = -90;
+    float pitchFlat = 0;
     
-    float rollThresh = 22;
-    float pitchThresh = 22;
+#if HAND == 1
+    float rollFlat = 0;
+#else
+    float rollFlat = 180;
+#endif
+
+    float rollUp = -90 * HAND;
+    float rollDown = 90 * HAND;
+    
+    float rollThresh = 35;
+    float pitchThresh = 35;
     
     float rollOffset = 0;
     float pitchOffset = 0;
     float headingOffset = 0;
     
     
-    float initialHeading = 0;
+    bool pointerUp()    {
+        if(abs(pitch - pitchUp) < pitchThresh) return true; return false; }
+    bool pointerDown()  {
+        if(abs(pitch - pitchDown) < pitchThresh) return true; return false; }
+    bool thumbUp()      {
+        if(abs(roll - rollUp) < rollThresh) return true;
+        return false;
+    }
+    bool thumbDown()      {  //guess. Could also be up
+        if(abs(roll - rollDown) < rollThresh) return true;
+        return false;
+    }
+    bool palmUp()     {
+        if(abs(roll) - rollFlat < rollThresh && abs(pitch) - pitchFlat < pitchThresh) return true;
+        return false;
+    }
+
     
+    bool palmDown()     {
+        if(abs(roll) - pitchFlat < pitchThresh && abs(pitch) - pitchFlat < pitchThresh) return true;
+        return false;
+    }
+    
+    bool isShaking() {
+        if(mShake.shaking) return true; return false;
+    }
+    
+
+void printAll(){
+    
+    Serial.print(F("roll: "));
+    Serial.print(roll);
+    Serial.print(F("  pitch"));
+    Serial.print(pitch);
+    Serial.print(F(" heading "));
+    Serial.print(heading);
+    Serial.println(F(""));
+}
+
+
+    float initialHeading = 0;
+
     struct shake {
         float x = 0;
         float y = 0;
@@ -129,7 +180,7 @@ class Imu
         
         
     private:
-        float thresh = 12;
+        float thresh = 30;
 
     };
     
@@ -182,32 +233,7 @@ class Imu
         
     }
     
-    bool pointerUp()    {
-        if(abs(pitch - up) < rollThresh) return true; return false; }
-    bool pointerDown()  {
-        if(abs(pitch - down) < rollThresh) return true; return false; }
-    bool thumbUp()      {  //guess. Could be down
-        if(abs(roll - side) < pitchThresh) return true;
-        return false;
-    }
-    bool thumbDown()      {  //guess. Could also be up
-        if(abs(roll - side) < pitchThresh) return true;
-        return false;
-    }
-
-    
-    bool palmDown()     {
-        if(abs(roll - flat) < pitchThresh && abs(pitch - flat)) return true;
-        return false;
-    }
-    bool palmUp()     {
-        if(abs(roll - flip) < pitchThresh && abs(pitch - flip)) return true;
-        return false;
-    }
-    
-    bool isShaking() {
-        if(mShake.shaking) return true; return false;
-    }
+  
 
 
     void update(){

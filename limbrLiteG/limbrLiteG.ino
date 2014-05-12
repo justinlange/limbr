@@ -4,7 +4,6 @@
 //TO DO: reverse index flex se3nsor left hand
 
 
-#define LED_PIN     3
 #define COLOR_ORDER GRB
 //#define CHIPSET     WS2811
 #define BRIGHTNESS  100
@@ -36,7 +35,7 @@ int SPARKING = 100;
 #define INDEX_CT 8
 #define THUMB_CT 8
 
-#define DATA_PIN 3
+//#define DATA_PIN 3
 #define STRIP_NUM 5
 
 
@@ -161,15 +160,14 @@ void loop() {
     followFingers();
     
     
-    //s.printDOFinfo();
+    //s.rHand.printDOFinfo();
     
     //timerCheck(); //fades green
     
     //xpalmJewel();
     //cubulateSimple();
     //adjustHue();
-    s.readSensors(true);
-
+    s.readSensors(false);
     
     
     
@@ -177,10 +175,12 @@ void loop() {
     //runSpell(s.spellID());
     
     
-    
+    //s.setTouchRead();
     
     //redBlue();
     //s.evalGesture();
+    
+    //delay(100);
     
     //int cooling = s.getFlex(0, 20, 100);
     //int sparking = s.getFlex(1, 50, 200);
@@ -353,7 +353,7 @@ void followFingers(){
     
     for(int i=0; i<5; i++){
         int controlNumber = s.getFlex(i, 0, 255);
-        Serial.print(controlNumber);
+        //Serial.print(controlNumber);
         for(int j = 0; j < NUM_LEDS; j++) {
             leds[i][j].setHSV(colNum, 255, controlNumber);
         }

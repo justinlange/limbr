@@ -1015,10 +1015,8 @@
 		AAA2140319170742AA0004CB /* MS561101BA.h in Sources */ = {isa = PBXBuildFile; fileRef = AAAA140319170742AA0004CB /* MS561101BA.h */; };
 		AAA2140319170742AA0004CD /* Spacebrew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAAA140319170742AA0004CD /* Spacebrew.cpp */; };
 		AAA2140319170742AA0004CE /* Spacebrew.h in Sources */ = {isa = PBXBuildFile; fileRef = AAAA140319170742AA0004CE /* Spacebrew.h */; };
-		D0C2761E18DA3E8C00E8E596 /* LocalLibrary.h in Sources */ = {isa = PBXBuildFile; fileRef = D0C9761E18DA3E8C00E8E596 /* LocalLibrary.h */; };
 		D0C2766918DA3E8C00E8E596 /* limbrLiteG.ino in Sources */ = {isa = PBXBuildFile; fileRef = D0C9766918DA3E8C00E8E596 /* limbrLiteG.ino */; };
 		D0C9761818DA3E8C00E8E596 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0C9761718DA3E8C00E8E596 /* main.cpp */; };
-		D0C9761D18DA3E8C00E8E596 /* LocalLibrary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0C9761C18DA3E8C00E8E596 /* LocalLibrary.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -2086,8 +2084,6 @@
 		D0C9761718DA3E8C00E8E596 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		D0C9761918DA3E8C00E8E596 /* Makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		D0C9761B18DA3E8C00E8E596 /* ReadMe.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
-		D0C9761C18DA3E8C00E8E596 /* LocalLibrary.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LocalLibrary.cpp; sourceTree = "<group>"; };
-		D0C9761E18DA3E8C00E8E596 /* LocalLibrary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocalLibrary.h; sourceTree = "<group>"; };
 		D0C9762018DA3E8C00E8E596 /* Sketchbook.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = Sketchbook.txt; path = Sketchbook/Sketchbook.txt; sourceTree = "<group>"; };
 		D0C9762218DA3E8C00E8E596 /* Adafruit ATmega32U4 (USBtinyISP).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Adafruit ATmega32U4 (USBtinyISP).xcconfig"; path = "Configurations/Adafruit ATmega32U4 (USBtinyISP).xcconfig"; sourceTree = "<group>"; };
 		D0C9762318DA3E8C00E8E596 /* Arduino Due.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Arduino Due.xcconfig"; path = "Configurations/Arduino Due.xcconfig"; sourceTree = "<group>"; };
@@ -2157,8 +2153,6 @@
 		D0C9766718DA3E8C00E8E596 /* ek_lm4f120xl.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = ek_lm4f120xl.xml; path = Utilities/ek_lm4f120xl.xml; sourceTree = "<group>"; };
 		D0C9766818DA3E8C00E8E596 /* TemplateIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = TemplateIcon.icns; path = Utilities/TemplateIcon.icns; sourceTree = "<group>"; };
 		D0C9766918DA3E8C00E8E596 /* limbrLiteG.ino */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; path = limbrLiteG.ino; sourceTree = "<group>"; };
-		D0E32FB218DBD49C006E145C /* Controller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Controller.cpp; sourceTree = "<group>"; };
-		D0E32FB318DBD49C006E145C /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
 		D0FA7DA418FF495100161376 /* Shape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape.cpp; sourceTree = "<group>"; };
 		D0FA7DA518FF495100161376 /* Shape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -5051,12 +5045,8 @@
 				D0C9761718DA3E8C00E8E596 /* main.cpp */,
 				D0C9761918DA3E8C00E8E596 /* Makefile */,
 				D0C9761B18DA3E8C00E8E596 /* ReadMe.txt */,
-				D0C9761C18DA3E8C00E8E596 /* LocalLibrary.cpp */,
-				D0C9761E18DA3E8C00E8E596 /* LocalLibrary.h */,
 				D0C9766918DA3E8C00E8E596 /* limbrLiteG.ino */,
 				D0149557191DD61300A2DF54 /* Spell.h */,
-				D0E32FB218DBD49C006E145C /* Controller.cpp */,
-				D0E32FB318DBD49C006E145C /* Controller.h */,
 				D0C9761F18DA3E8C00E8E596 /* Sketchbook */,
 				AAAA140319170742AA000000 /* Resources */,
 				D0C9762118DA3E8C00E8E596 /* Configurations */,
@@ -5389,8 +5379,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0C9761818DA3E8C00E8E596 /* main.cpp in Sources */,
-				D0C9761D18DA3E8C00E8E596 /* LocalLibrary.cpp in Sources */,
-				D0C2761E18DA3E8C00E8E596 /* LocalLibrary.h in Sources */,
 				D0C2766918DA3E8C00E8E596 /* limbrLiteG.ino in Sources */,
 				AAA2140319170742AA000005 /* Arduino.h in Sources */,
 				AAA2140319170742AA000007 /* malloc.c in Sources */,

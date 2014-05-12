@@ -32,31 +32,20 @@ void Shape::init(){
     initGestures();
     rHand = Imu();
     rHand.initIMU();
-
-    
 }
-
-
-int Shape::spellID(){
-    int _spellID = 0;
-    
-    return _spellID;
-    
-}
-
-    
-
 
 
 typedef struct
 {
     String name;
-    int pin;
     int lowRead;
     int highRead;
     int rawVal;
     int mapVal;
     boolean isHigh;
+    
+    void setPin(int _pin) { pin = _pin; }
+    int getPin() { return pin; }
     
     int pMap(int min, int max){
         int mMap = map(rawVal, lowRead, highRead, min, max);
@@ -64,23 +53,54 @@ typedef struct
         return mMap;
     }
     
+private:
+    int pin;
+    
 } sensor;
 sensor flex[5];
-sensor touch[5];
 
 typedef struct
 {
-    bool isTouch[4]; //fingers that are touching
-    int id;
+    String name;
+    int writingTo;
+    boolean isHigh;
     
-    void setPos(byte _bendPos, byte _touchPos)
+    
+    int getPin() { return pin; }
+    void setPin(int _pin) { pin = _pin; }
+    void printInfo(){
+        Serial.print(name);
+        Serial.print(" on pin ");
+        Serial.print(pin);
+        Serial.print(", writing to ");
+        Serial.print(writingTo);
+        Serial.print("  and is ");
+        Serial.println(isHigh);
+
+        
+        
+    }
+    
+private:
+    int pin;
+    
+} touchSensor;
+touchSensor touch[5];
+
+
+
+typedef struct
+{
+    void setPos(byte _bendPos, byte _touchPos, int _dirPos)
     {
         bendPos = _bendPos;
         touchPos = _touchPos;
+        dirPos = _dirPos;
     }
     
     byte getTouchPos() { return touchPos; }
     byte getBendPos()  { return bendPos ; }
+    int getDirPos() { return dirPos; }
     
     byte spgetBendPos()  {
         byte tPos = bendPos | 1;
@@ -100,18 +120,30 @@ typedef struct
     }
     
     void getInfo(){
-        String printString = "name  " + sanskrit + "  benPos: " + bendPos + "  touchPos: " + touchPos;
+        String printString = "name  " + sanskrit + "  benPos: " + bendPos + "  touchPos: " + touchPos + " dirPos: " + dirPos;
         Serial.println(printString);
-        delay(100);
     }
     
+    void setFingerPos(int space, bool val){
+        fingerPos[space] = val;
+        
+    }
+    
+    void setThumbPos(int space, bool val){
+        thumbPos[space] = val;
+        
+    }
+
     
     
-    int getSpell(){ return spell; }
+    
     
 private:
     String sanskrit, english;
-    byte bendPos, touchPos, dirPos;
+    byte bendPos, touchPos;
+    bool fingerPos[4];
+    bool thumbPos[4];
+    int dirPos;
     int spell;
     
     
@@ -119,13 +151,15 @@ private:
 gesture cGesture;
 gesture gestures[NUM_GESTURES];
 
+
+
 void Shape::calibrate(){
     for(int i=0;i<5;i++){
-        if(analogRead(flex[i].pin) < flexLow[i]){
-            flexLow[i] = analogRead(flex[i].pin);
+        if(analogRead(flex[i].getPin()) < flexLow[i]){
+            flexLow[i] = analogRead(flex[i].getPin());
         }
-        if(analogRead(flex[i].pin) > flexHigh[i]){
-            flexHigh[i] = analogRead(flex[i].pin);
+        if(analogRead(flex[i].getPin()) > flexHigh[i]){
+            flexHigh[i] = analogRead(flex[i].getPin());
         }
     }
     
@@ -152,17 +186,72 @@ int Shape::getFlex(int finger, int min, int max){
 }
 
 
+void Shape::setTouchRead(){
+    
+    for(int i=0;i<5;i++){
+        
+        pinMode(touch[i].getPin(), OUTPUT);
+        digitalWrite(touch[i].getPin(), HIGH);
+        
+        for(int j=0;j<5;j++){
+            if(j != i){
+                /*
+                 Serial.print("i: ");
+                 Serial.print(i);
+                 Serial.print("   j: ");
+                 Serial.println(j);
+                 */
+                pinMode(touch[j].getPin(), INPUT);
+                boolean myBool = digitalRead(touch[j].getPin());
+                if(myBool) whichPin(j,i);
+            }  
+        }
+        digitalWrite(touch[i].getPin(), LOW);
+    }
+
+    
+}
+
+void Shape::whichPin(int writePin, int readPin){
+    Serial.print("pin: ");
+    switch(writePin){
+        case 0:
+            Serial.print(touch[writePin].getPin());
+            break;
+        case 1:
+            Serial.print(touch[writePin].getPin());
+            break;
+        case 2:
+            Serial.print(touch[writePin].getPin());
+            break;
+        case 3:
+            Serial.print(touch[writePin].getPin());
+            break;
+        case 4:
+            Serial.print(touch[writePin].getPin());
+            break;
+    }
+    Serial.print(" is writing to ");
+    Serial.println(touch[readPin].getPin());
+    
+    
+}
+
+
 void Shape::readSensors(bool print){
     
+    int dirPos = 0;
+
     rHand.update();
     
     int bendByte = 0;
     int touchByte = 0;
     
     for (int i=0; i<5; i++) {
-        flex[i].rawVal = analogRead(flex[i].pin);
+        flex[i].rawVal = analogRead(flex[i].getPin());
         flex[i].mapVal = map(flex[i].rawVal, flex[i].lowRead, flex[i].highRead, 0, 100);
         if (flex[i].mapVal > bendThresh) {
+            //Serial.print("crossed bend thresh");
             flex[i].isHigh = true;
             bendByte = bendByte | 1;
             
@@ -173,27 +262,83 @@ void Shape::readSensors(bool print){
             bendByte = bendByte << 1;
         }
         
-        bool readState;
         
         
-        for (int i=0; i<8; i++){
-            readState = digitalRead(touch[i].pin);
-            
-            if(readState){
-                touch[i].isHigh = true;
-                touchByte = touchByte | 1;
-                
-            }else{
-                touch[i].isHigh = true;
-                
+        
+        
+        /*  read finger states   */
+        
+        //first do non-thumb digits
+
+        for (int i=0; i<5; i++) {
+            for (int j=0; j<5; j++) {
+                touch[i].writingTo = false;
+                touch[i].isHigh = false;
             }
-            if (i<7) touchByte = touchByte << 1;
-            
         }
         
-        cGesture.setPos(bendByte, touchByte);
+        for(int i=0;i<4;i++){
+            
+            pinMode(touch[i].getPin(), OUTPUT);
+            digitalWrite(touch[i].getPin(), HIGH);
+            
+            int j = i + 1;
+                pinMode(touch[j].getPin(), INPUT);
+                touch[j].isHigh = digitalRead(touch[j].getPin());
         
+                    if(touch[j].isHigh) {
+                       
+                       // touch[i].printInfo();
+                        //touch[j].printInfo();
+                        
+                        touchByte = touchByte | 1;
+                        touch[i].isHigh = true;
+                        touch[i].writingTo = touch[j].getPin();
+
+                    }else{
+                        touchByte = touchByte << 1;
+                       
+                    }
+            digitalWrite(touch[i].getPin(), LOW);
+        }
+        
+        //find what digits thumb is touching
+        
+        for (int i=0; i<5; i++) {
+            for (int j=0; j<5; j++) {
+                touch[i].writingTo = false;
+                touch[i].isHigh = false;
+            }
+        }
+
+        pinMode(touch[0].getPin(), OUTPUT);
+
+        for(int i=1;i<5;i++){
+            pinMode(touch[i].getPin(), INPUT);
+            bool myBool = digitalRead(touch[i].getPin());
+           
+            if(myBool) {
+                Serial.print("  reading from thumb: ");
+                touch[i].printInfo();
+                touchByte = touchByte | 1;
+            }else{
+                touchByte = touchByte << 1;
+            }
+
+        }
+        
+        
+        if (rHand.pointerUp()) dirPos = 1;
+        if (rHand.pointerDown()) dirPos = 2;
+        if (rHand.thumbUp()) dirPos = 3;
+        if (rHand.thumbDown()) dirPos = 4;
+        if (rHand.palmUp()) dirPos = 5;
+        if (rHand.palmDown()) dirPos = 6;
+        
+        cGesture.setPos(bendByte, touchByte, dirPos);
+
         if(print){
+            /*
             Serial.print(flex[i].name);
             Serial.print(" raw: ");
             Serial.print(flex[i].rawVal);
@@ -201,36 +346,28 @@ void Shape::readSensors(bool print){
             Serial.print(flex[i].mapVal);
             Serial.print(", isHigh: ");
             Serial.print(flex[i].isHigh);
-            Serial.print("    ");
-            
+
+            Serial.print("  ");
+             */
         }
         
-    } // create a byte representing bent fingers
-    
-    
-    //have 8 switches, four between spaces between fingers left to right, and four between thumb & each finger
-    
+       
+        
+    }
+
+    Serial.print("touchByte:  ");
+        for(int i = 0; i< 8; i++){
+            
+        }
+
     
     if(print) {
-        // Serial.println();
-        
-        /*
-         if(bendByte == mukula.getBendPos())
-         {
-         Serial.print("mukula!");
-         }
-         else if(bendByte == thrisula.getBendPos())
-         {
-         Serial.print("thrisula!");
-         }
-         
-         //Serial.print("  byte:  ");
-         //Serial.println(bendByte);
-         */
-        
-    } //print values for testing (delete soon)
+        Serial.print(",  dirPos");
+        Serial.print(dirPos);
+        rHand.printAll();
+        Serial.print(",  dirPos");
+    }
     
-    Serial.println();
     
 }
 
@@ -251,46 +388,33 @@ void Shape::initGestures(){
     
 
     gestures[0].setInfo("none","none",B00000000,B00000000,B000000);
-    gestures[1].setInfo("PATAKA","Flag", B00000, B11110000,	B100000);
-    gestures[2].setInfo("TRIPATAKA", "Flag with three fingers", B00010, B11110000, B100000);
-    gestures[3].setInfo("KARTARIMUKHA",	"Scissors blades", B10010,B00000000,B100000);
-    gestures[4].setInfo("ARDHACHANDRA","Crescent Moon",	B00000,	B11110000,	B001000);
+    gestures[1].setInfo("PATAKA","Flag", B00000, B11110000,	1);
+    gestures[2].setInfo("TRIPATAKA", "Flag with three fingers", B00010, B00110000, 1);
+    gestures[3].setInfo("KARTARIMUKHA",	"Scissors blades", B10010,B00000000,1);
+    gestures[4].setInfo("ARDHACHANDRA","Crescent Moon",	B00000,	B11110000,	3);
+    gestures[5].setInfo("ARALA",	"Bent",	B11000,	B01110000,	B100000);
+    gestures[6].setInfo("SHUKATUNDA","Parrots beak",	B11010, B00000000, 1);
+    gestures[7].setInfo("MUSHTI", "The first",	B11111,	B11111111,	3);
+    gestures[8].setInfo("SHIKHARA",	"Peak",	B01111,	B11110000,	3);
+    gestures[9].setInfo("KAPITTA","wood apple",B01111,  B01110111,1);
+    gestures[10].setInfo("KATAKAMUKHA",	"Bracelet's lock",	B01100,	B00001000,	1);
+    gestures[11].setInfo("SUCHI", "Needle",	B00111	,B01110111,	1);
+    gestures[12].setInfo("PADMAKOSHA", "Lotus bud",	B11111,	B00000000,	5);
+    gestures[13].setInfo("SARPASIRSHA",	"Snakes head",	B01111	,B11110000,	1);
+    gestures[14].setInfo("MRIGASIRSHA",	"Deers head", B01110, B11100000,	1);
+    gestures[15].setInfo("LANGULA", "unknown", B00010,	B00000000, 5);
+    gestures[16].setInfo("ALAPADMA","Lotus",B00111,	B00000000,5);
+    gestures[17].setInfo("CHATURA",	"Four",	B10000,	B01110000,	1);
+    gestures[18].setInfo("BHRAMARA", "Bee",	B01100,	B00000100,	1);
+    gestures[19].setInfo("HAMSASYA", "Swan's beak",	B01000,	B00001000, 1);
+    gestures[20].setInfo("HAMSAPAKSHA", "Swan's wing", B10000,	B11100000,	1);
+    gestures[21].setInfo("SANDAMSA", "Pincers",	B11000,	B00001000,	1);
+    gestures[22].setInfo("MUKALA","Bud",B01111,	B11111111,	5);
+    gestures[23].setInfo("URNANABHA", "Spider",	B11111,	B00000000,	1);
+    gestures[24].setInfo("TAMRACHUDA", "Cock",	B01111,	B00110100,	1);
     
+ 
     /*
-    gestures[].setInfo("ARALA",	"Bent",	B11000,	B01110000,	B100000);
-    gestures[].setInfo("SHUKATUNDA","Parrots beak",	B11010,		B100000);
-    gestures[].setInfo(");
-    gestures[].setInfo(");
-    gestures[].setInfo(");
-    gestures[].setInfo(");
-    gestures[].setInfo(");
-    gestures[].setInfo(");
-    gestures[].setInfo(");
-    gestures[].setInfo(");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-    gestures[].setInfo("");
-
-    
-    */
-    /*
-    
     gestures[0].setInfo("change", "change", B11111, B1111000, 0); //gesture primes receiving new gesture
     gestures[4].setInfo("pataka", "flag", B00000, B11110000, 4);
     gestures[1].setInfo("thrisula", "trident", B01110, B01100000, 1);
@@ -314,7 +438,7 @@ void Shape::initGestures(){
     
     //gestures[3].setInfo("Mudrakhya",)
     //gestures[0].setPos(B111110, B001001);
-    gestures[0].getInfo();
+    	gestures[1].getInfo();
     
     
 }//set gesture info for hand positions
@@ -323,18 +447,18 @@ void Shape::initSensors() {
     
     for (int i=0; i<5; i++) {
         //flex[i] = sensor();
-        flex[i].pin = analogInPins[i];
+        flex[i].setPin(analogInPins[i]);
         flex[i].name = fingerNames[i];
         flex[i].lowRead = flexLow[i];
         flex[i].highRead = flexHigh[i];
         flex[i].isHigh = false;
-        pinMode(flex[i].pin, INPUT);
+        pinMode(flex[i].getPin(), INPUT);
+        
+        touch[i].setPin(touchPins[i]);
+        touch[i].name = fingerNames[i];
+        touch[i].isHigh = false;
     }
     
-    for (int i=0; i<4; i++) {
-        pinMode(digitalInPins[i], INPUT_PULLUP);
-        touch[i].pin = digitalInPins[i];
-    }
     
 }
 
@@ -342,36 +466,15 @@ void Shape::storeCalibration(){
     
         for (int i=0; i<5; i++) {
             int difference = flexHigh[i] - flexLow[i];
-            int buffer = difference/10;
+            int buffer = difference/17;
             
             flex[i].lowRead = flexLow[i] + buffer;
             flex[i].highRead = flexHigh[i] - buffer;
         }  
 }
 
-/*
- bool Shape::sameGesture(gesture gesCur, gesture gesRef){
- if(gesCur.getBendPos() == gesRef.getBendPos() && gesCur.getTouchPos() == gesRef.getTouchPos()){
- return true;
- }
- return false;
- 
- bool Shape::sameBesidesPinkie(gesture gesCur, gesture gesRef){
- if(gesCur.spgetBendPos() == gesRef.spgetBendPos() ){
- return true;
- }
- return false;
- }
- 
- 
- bool Shape::sameBend(gesture gesCur, gesture gesRef) {
- if(gesCur.getBendPos() == gesRef.getBendPos() ){
- return true;
- }
- return false;
- }
- 
- */
+
+
 
 bool Shape::considerGesture() {
     //if current gesture is changeGesture
@@ -384,30 +487,29 @@ bool Shape::considerGesture() {
 //for evaluating gestures, look at flex positions and only loosly consider (or not at all) touch positions
 //between fingers that are bent
 
-/*
+
  void Shape::evalGesture(){
  
- for(int i = 0; i< NUM_GESTURES; i++ ){
- 
- //gestures[i].getInfo();
- 
- if(sameBesidesPinkie(cGesture, gestures[i])){
+     for(int i = 1; i< NUM_GESTURES; i++ ){
+         if(cGesture.getBendPos() == gestures[i].getBendPos()){
+             if(cGesture.getTouchPos() == gestures[i].getTouchPos()){
+                 if(cGesture.getDirPos() == gestures[i].getDirPos())    {
+                     Serial.print("full match  ");
+                     gestures[i].getInfo();
+
+                 }
+             }
+         }
+    }
+   
  //String printString = "at position: " + i;
  //Serial.print(printString);
- gestures[i].getInfo();
- //runSpell( gestures[i].getSpell() );
- }
- 
+
  }
  //if(touchByte == mukula.getTouchPos()){
  //set current hand gesture to last hand gesture
  //set current hand gesture to mukula
  
- }
- 
- */
-
-
 
 void Shape::begin() {
     _data = 0;
