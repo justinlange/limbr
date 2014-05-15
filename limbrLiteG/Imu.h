@@ -18,7 +18,7 @@
 /// @see		ReadMe.txt for references
 ///
 
-#define HAND    1  //1 means right hand, -1 for left hand
+#define HAND    -1  //1 means right hand, -1 for left hand
 
 
 #include <Adafruit_Sensor.h>

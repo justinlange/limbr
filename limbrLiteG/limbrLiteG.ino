@@ -24,32 +24,10 @@ int SPARKING = 100;
 #include <Metro.h> //Include Metro library
 #include "Controller.h"
 #include "Shape.h"
+#include "Spell.h"
 
-#define NUM_LEDS 12 //must address LEDS individually :-(
-
-//13,5,2,7,20
-
-#define PINKIE_CT 8
-#define RING_CT 8
-#define MIDDLE_CT 8
-#define INDEX_CT 8
-#define THUMB_CT 8
-
-//#define DATA_PIN 3
-#define STRIP_NUM 5
-
-
-CRGB ledsThumb[THUMB_CT];
-CRGB ledsIndex[INDEX_CT];
-CRGB ledsMiddle[MIDDLE_CT];
-CRGB ledsRing[RING_CT];
-CRGB ledsPinkie[PINKIE_CT];
-
-
-CRGB leds[5][NUM_LEDS];
 
 Metro metro0 = Metro(500);
-Metro metro1 = Metro(30);
 
 
 bool flashState;
@@ -70,8 +48,11 @@ void testGrid();
 void runFire(int cooling, int sparking);
 void Fire2012(int cooling, int sparking);
 void followFingers();
+void followFingersChase();
+
 
 Shape s;
+Spell mSpell;
 
 
 
@@ -87,20 +68,7 @@ const static int pixPins[] = {13,5,2,7,20};
 
 void initLEDs() {
     
-    /*
-     FastLED.addLeds<WS2812, 5, GRB>(ledsPinkie, PINKIE_CT);
-     FastLED.addLeds<WS2812, 7, GRB>(ledsRing, RING_CT);
-     FastLED.addLeds<WS2812, 4, GRB>(ledsMiddle, MIDDLE_CT);
-     FastLED.addLeds<WS2812, 3, GRB>(ledsIndex, INDEX_CT);
-     FastLED.addLeds<WS2812, 6, GRB>(ledsThumb, THUMB_CT);
-     
-     */
-    FastLED.addLeds<WS2812, 7, GRB>(leds[0], THUMB_CT);
-    FastLED.addLeds<WS2812, 5, GRB>(leds[1], INDEX_CT);
-    FastLED.addLeds<WS2812, 2, GRB>(leds[2], MIDDLE_CT);
-    FastLED.addLeds<WS2812, 20, GRB>(leds[3], RING_CT);
-    FastLED.addLeds<WS2812, 13, GRB>(leds[4], PINKIE_CT);
-    LEDS.setBrightness(100);
+
     
     
     
@@ -157,7 +125,9 @@ void setup() {
 }
 void loop() {
     
-    followFingers();
+    mSpell.followFingers();
+    mSpell.followFingersChase();
+
     
     
     //s.rHand.printDOFinfo();
@@ -345,169 +315,11 @@ void adjustHue(){
     }
      */
 
-
-
-void followFingers(){
-    
-    int colNum = int(s.rHand.getRoll(0,255));
-    
-    for(int i=0; i<5; i++){
-        int controlNumber = s.getFlex(i, 0, 255);
-        //Serial.print(controlNumber);
-        for(int j = 0; j < NUM_LEDS; j++) {
-            leds[i][j].setHSV(colNum, 255, controlNumber);
-        }
-    }
-    FastLED.show();
-    
-}
-
-
-void followFingersMono(){
-    
-    for(int i=0; i<5; i++){
-        int controlNumber = s.getFlex(i, 0, 255);
-        Serial.print(controlNumber);
-        for(int j = 0; j < NUM_LEDS; j++) {
-            leds[i][j].setRGB(0,0,controlNumber);
-        }
-    }
-    FastLED.show();
-
-}
+int showNum = 0;
 
 
 
-void followHand(){
-    
-    int controlNumber = s.getFlex(2, 0, 100);
-    
-        for(int i=0; i<5; i++){
-                for(int j = 0; j < NUM_LEDS; j++) {
-                    leds[i][j] = CRGB::Blue;
-                }
-            }
-        FastLED.setBrightness(controlNumber);
-        FastLED.show();
-    
-}
 
-
-
-void cubulateSimple(){
-    
-    int pause = 20;
-    int longPause = pause * 10;
-    
-    //turn all the LEDS
-    
-    for(int i=1; i<5; i++){
-        for(int j = 0; j < NUM_LEDS; j++) {
-            leds[i][j] = CRGB::Yellow;
-        }
-    }
-    FastLED.show();
-    delay(pause);
-    
-    for(int i=1; i<5; i++){
-        for(int j = 0; j < NUM_LEDS; j++) {
-            leds[i][j] = CRGB::Black;
-        }
-    }
-    
-    FastLED.show();
-    delay(pause);
-    
-    //turn on the outside leds at an interval, for 10 times
-
-for (int t=0; t<5; t++) {
-            for(int j = 0; j < NUM_LEDS; j++) {
-                leds[1][j] = CRGB::Yellow;
-                leds[4][j] = CRGB::Yellow;
-                if(j < 3 || j > 8){
-                    leds[2][j] = CRGB::Yellow;
-                    leds[3][j] = CRGB::Yellow;
-
-                }
-            }
-    
-    FastLED.show();
-    delay(pause);
-        
-        for(int i=1; i<5; i++){
-            for(int j = 0; j < NUM_LEDS; j++) {
-                leds[i][j] = CRGB::Black;
-            }
-        }
-        FastLED.show();
-        delay(pause);
-        
-    }
-    
-    for(int i=1; i<5; i++){
-        for(int j = 0; j < NUM_LEDS; j++) {
-            leds[i][j] = CRGB::Yellow;
-        }
-    }
-    FastLED.show();
-    delay(pause);
-    
-    for(int i=1; i<5; i++){
-        for(int j = 0; j < NUM_LEDS; j++) {
-            leds[i][j] = CRGB::Black;
-        }
-    }
-    FastLED.show();
-
-    delay(longPause);
-
-    
-    //turn back all the leds again
-    //wait
-    
-    
-}
-void palmJewel(){
-    
-    int increment = 1;
-    
-    for(int scale = 0; scale < 128; scale++) {
-        LEDS.showColor(CHSV(100, 200, 150), scale);
-        delay(random8(increment, increment+3));
-    }
-    
-    
-    
-    for(int scale = 128; scale > 0; scale--) {
-        LEDS.showColor(CHSV(100, 200, 150), scale);
-        delay(random8(increment, increment+3));
-    }
-    
-    
-}
-void redBlue(){
-    int stripNum = STRIP_NUM;
-    
-    if (metro1.check() == 1){
-        flashState = !flashState;
-        if(flashState){
-
-        for(int i=0; i<5; i++){
-            for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed++) {
-                    leds[i][whiteLed] = CRGB::Blue;
-                }
-            }
-        }else if(!flashState){
-            for(int i=0; i<5; i++){
-                for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed++) {
-                    leds[i][whiteLed] = CRGB::Red;
-                }
-            }
-        }
-        FastLED.show();
-    
-    }
-}
 
 void timerCheck(){
     int stripNum = NUM_LEDS;
