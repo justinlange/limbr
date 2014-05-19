@@ -2080,6 +2080,7 @@
 		D0A4C25718E6712600D08A94 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		D0A4C25818E6712600D08A94 /* RF12_T3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RF12_T3.cpp; sourceTree = "<group>"; };
 		D0A4C25918E6712600D08A94 /* RF12_T3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RF12_T3.h; sourceTree = "<group>"; };
+		D0AF14B419250D38002914AF /* Sorcery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sorcery.h; sourceTree = "<group>"; };
 		D0C9761418DA3E8C00E8E596 /* Index */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Index; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0C9761718DA3E8C00E8E596 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		D0C9761918DA3E8C00E8E596 /* Makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -5047,6 +5048,7 @@
 				D0C9761B18DA3E8C00E8E596 /* ReadMe.txt */,
 				D0C9766918DA3E8C00E8E596 /* limbrLiteG.ino */,
 				D0149557191DD61300A2DF54 /* Spell.h */,
+				D0AF14B419250D38002914AF /* Sorcery.h */,
 				D0C9761F18DA3E8C00E8E596 /* Sketchbook */,
 				AAAA140319170742AA000000 /* Resources */,
 				D0C9762118DA3E8C00E8E596 /* Configurations */,

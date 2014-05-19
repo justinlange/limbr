@@ -82,20 +82,29 @@ class Imu
     
     
     int getRoll(int min, int max){
+        /*
+        Serial.print("  min: ");
+
+        Serial.print(min);
+        Serial.print("  max: ");
+        Serial.print(max);
+         */
+        Serial.print("  roll from getRoll  ");
+        Serial.print(roll);
         int val = map(roll, -180, 180, min, max);
-        if(val<min) return min;
-        if(val>max) return max;
+        //if(val<min) return min;
+        //if(val>max) return max;
+//        Serial.print("  val: ");
+//        Serial.println(val);
+
+
         return val;
     }
-
-    
-    
-    
-    
+ 
 
 //test
 
-    float roll = 0;
+    float roll = 13;
     float pitch = 0;
     float heading = 0;
     
@@ -236,8 +245,8 @@ void printAll(){
   
 
 
-    void update(){
-        
+    float update(){
+        Serial.print("update is running");
         sensors_event_t accel_event;
         sensors_event_t mag_event;
         sensors_vec_t   orientation;
@@ -249,6 +258,7 @@ void printAll(){
         /* Use the new fusionGetOrientation function to merge accel/mag data */
         if (dof.fusionGetOrientation(&accel_event, &mag_event, &orientation))
         {
+            Serial.println("accel event");
         
             roll = orientation.roll + rollOffset;
             pitch = orientation.pitch + pitchOffset;
@@ -259,10 +269,15 @@ void printAll(){
             mShake.y = accel_event.acceleration.y;
             mShake.z = accel_event.acceleration.z;
             
-            mShake.update();
+            //mShake.update();
 
+            
+            Serial.print("roll: ");
+            Serial.println(roll);
+            return roll;
 
             }
+        return roll;
         }
     
     void getShake(){

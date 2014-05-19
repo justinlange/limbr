@@ -129,6 +129,7 @@ public:
     const int touchPins[5] = {6,4,3,15,16};
     void calibrate();
         void storeCalibration();
+    int getRoll(int min, int max);
     
     //int spellID;
 

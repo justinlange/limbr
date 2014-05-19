@@ -59,6 +59,7 @@ private:
 } sensor;
 sensor flex[5];
 
+/*
 typedef struct
 {
     String name;
@@ -87,9 +88,38 @@ private:
 } touchSensor;
 touchSensor touch[5];
 
+*/
+
+struct touchSensor
+{
+    String name;
+    int writingTo;
+    boolean isHigh;
+    
+    
+    int getPin() { return pin; }
+    void setPin(int _pin) { pin = _pin; }
+    void printInfo(){
+        Serial.print(name);
+        Serial.print(" on pin ");
+        Serial.print(pin);
+        Serial.print(", writing to ");
+        Serial.print(writingTo);
+        Serial.print("  and is ");
+        Serial.println(isHigh);
+        
+        
+        
+    }
+    
+private:
+    int pin;
+    
+};
+touchSensor touch[5];
 
 
-typedef struct
+struct gesture
 {
     void setPos(byte _bendPos, byte _touchPos, int _dirPos)
     {
@@ -108,7 +138,6 @@ typedef struct
     }
     
     
-    
     void setInfo(String _sanskrit, String _english, byte _bendPos, byte _touchPos, byte _dirPos){
         
         sanskrit = _sanskrit;
@@ -116,28 +145,21 @@ typedef struct
         bendPos = _bendPos;
         touchPos = _touchPos;
         dirPos = _dirPos;
-        //spell = _spell; // deprecated -- spells will be assigned to gestures in case statement in main loop
     }
-    
+
     void getInfo(){
         String printString = "name  " + sanskrit + "  benPos: " + bendPos + "  touchPos: " + touchPos + " dirPos: " + dirPos;
         Serial.println(printString);
     }
-    
     void setFingerPos(int space, bool val){
         fingerPos[space] = val;
         
     }
-    
     void setThumbPos(int space, bool val){
         thumbPos[space] = val;
         
     }
 
-    
-    
-    
-    
 private:
     String sanskrit, english;
     byte bendPos, touchPos;
@@ -147,7 +169,7 @@ private:
     int spell;
     
     
-} gesture;
+};
 gesture cGesture;
 gesture gestures[NUM_GESTURES];
 
@@ -167,12 +189,16 @@ void Shape::calibrate(){
     
 }
 
-/*
+
 
 int Shape::getRoll(int min, int max){
-    int val = map(rHand.getRoll(), -90,90, min, max);
-  
- */
+    int val = map(rHand.update(), -90,90, min, max);
+    Serial.print(" val:    ");
+
+    Serial.print(val);
+    Serial.print("     ");
+    return val;
+}
     
 
 
@@ -242,7 +268,6 @@ void Shape::readSensors(bool print){
     
     int dirPos = 0;
 
-    rHand.update();
     
     int bendByte = 0;
     int touchByte = 0;
